@@ -1,4 +1,4 @@
-# internet-technology-qtd
+îî# internet-technology-qtd
 QTD helps users start meaningful conversations by offering themed question sessions in a simple web application. It is useful for friends, couples, or groups who want guided discussion topics.
 ## Contents
 
@@ -11,6 +11,7 @@ QTD helps users start meaningful conversations by offering themed question sessi
   - [Prototype Design](#prototype-design)
   - [Domain Design](#domain-design)
   - [Business Logic](#business-logic)
+  - [Database Schema](#database-schema)
 
 - [Implementation](#implementation)
   - [Backend Technology](#backend-technology)
@@ -119,3 +120,83 @@ As a user, I want to see questions one by one so that the conversation flows nat
 As a user, I want to optionally write answers during a session so that I can reflect on the questions.
 
 As a user, I want to see a summary of the session so that I can review all questions and answers at the end.
+
+---
+
+# Design
+
+## Database Schema
+
+The QTD application uses a relational database with five main entities that store categories, questions, user sessions, and responses. The database is designed to support the core functionality of managing discussion categories, displaying questions, recording user sessions, and storing user answers.
+
+### Entity Overview
+
+**AppUser**
+- Stores administrator credentials and role information
+- Fields: id, username (unique), password, role
+
+**Category**
+- Represents a discussion category grouping related questions
+- Fields: id, name, slug (unique), description, icon, color, active
+- Example categories: Friends, Dating, Deep Talk, Fun Topics
+
+**Question**
+- Individual questions belonging to a category
+- Fields: id, text, category_id (foreign key), active
+- Each category can contain multiple questions
+
+**Session**
+- Represents a user's discussion session within a category
+- Fields: id, category_id (foreign key), started_at, completed
+- Tracks when a session begins and whether it has been completed
+
+**SessionAnswer**
+- Stores user answers provided during a session
+- Fields: id, session_id (foreign key), question_id (foreign key), answer_text, answered_at
+- Links sessions to specific questions and captures user responses
+
+---
+
+### Entity Relationships
+
+```
+Category (1) ──── (*) Question
+Category (1) ──── (*) Session
+Question (1) ──── (*) SessionAnswer
+Session (1) ──── (*) SessionAnswer
+```
+
+**Relationship Details:**
+
+- **Category → Question** (One-to-Many): Each category contains multiple questions. Deleting a category cascades to all its questions.
+
+- **Category → Session** (One-to-Many): Each category has multiple sessions. Users select a category to start a new session.
+
+- **Question → SessionAnswer** (One-to-Many): Each question can be answered multiple times across different sessions.
+
+- **Session → SessionAnswer** (One-to-Many): Each session contains answers for multiple questions in that category.
+
+---
+
+### Database Table Structure
+
+| Table | Columns | Key Constraints |
+|-------|---------|-----------------|
+| **app_user** | id (PK), username (UK), password, role | Primary Key: id, Unique: username |
+| **category** | id (PK), name, slug (UK), description, icon, color, active | Primary Key: id, Unique: slug |
+| **question** | id (PK), text, category_id (FK), active | Primary Key: id, Foreign Key: category_id → category.id |
+| **session** | id (PK), category_id (FK), started_at, completed | Primary Key: id, Foreign Key: category_id → category.id |
+| **session_answer** | id (PK), session_id (FK), question_id (FK), answer_text, answered_at | Primary Key: id, Foreign Keys: session_id → session.id, question_id → question.id |
+
+---
+
+### Data Initialization
+
+The application seeds the database with sample data including:
+- **4 Categories**: Friends, Dating, Deep Talk, Fun Topics
+- **20 Questions**: 5 questions per category
+- **Sample Sessions**: 2 example sessions with user answers
+
+This seed data is defined in `src/main/resources/data.sql` and is automatically loaded when the application starts.
+
+---
