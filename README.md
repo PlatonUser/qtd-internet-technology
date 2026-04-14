@@ -219,6 +219,7 @@ The UI was first prototyped in **Budibase** to establish screen layouts, colour 
 A session can only be started if the chosen category has **at least 3 active questions**. 
 ```
 
+
 **Rule 2 – Cannot delete a category with active questions**
 
 An admin cannot delete a category that still has active questions. 
