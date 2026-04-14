@@ -199,4 +199,28 @@ The application seeds the database with sample data including:
 
 This seed data is defined in `src/main/resources/data.sql` and is automatically loaded when the application starts.
 
+### Wireframe & Prototype
+
+The UI was first prototyped in **Budibase** to establish screen layouts, colour system, and navigation flow before implementation. Key screens designed:
+
+- `/` – Home: category cards grid with "Start Session" buttons
+- `/session/setup` – Player setup: enter player names before starting
+- `/session/play` – Session view: question-by-question with answer inputs
+- `/session/play/final` – Session view: all questions are answered, button "finish" appear
+- `/admin/login` – Admin login form
+- `/admin/dashboard` – Stats overview + category breakdown table
+- `/admin/categories` – Category CRUD table
+- `/admin/questions` – Question CRUD table
+- `/admin/sessions` – Sessions read-only list
+
+
+**Rule 1 – Minimum questions required to start a session**
+
+A session can only be started if the chosen category has **at least 3 active questions**. 
+```
+
+**Rule 2 – Cannot delete a category with active questions**
+
+An admin cannot delete a category that still has active questions. 
+
 ---
