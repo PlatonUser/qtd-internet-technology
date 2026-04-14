@@ -1,4 +1,4 @@
-îî# internet-technology-qtd
+# internet-technology-qtd
 QTD helps users start meaningful conversations by offering themed question sessions in a simple web application. It is useful for friends, couples, or groups who want guided discussion topics.
 ## Contents
 
