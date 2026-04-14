@@ -217,7 +217,6 @@ The UI was first prototyped in **Budibase** to establish screen layouts, colour 
 **Rule 1 – Minimum questions required to start a session**
 
 A session can only be started if the chosen category has **at least 3 active questions**. 
-```
 
 
 **Rule 2 – Cannot delete a category with active questions**
