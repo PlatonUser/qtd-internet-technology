@@ -224,3 +224,77 @@ A session can only be started if the chosen category has **at least 3 active que
 An admin cannot delete a category that still has active questions. 
 
 ---
+
+## API Design
+
+### Public Endpoints
+
+GET /api/categories  
+GET /api/categories/{id}  
+GET /api/categories/{id}/questions  
+GET /api/sessions/start/{categoryId}  
+POST /api/sessions  
+GET /api/sessions/{id}  
+
+### Admin Endpoints
+
+GET /api/admin/categories  
+POST /api/admin/categories  
+PUT /api/admin/categories/{id}  
+DELETE /api/admin/categories/{id}  
+
+GET /api/admin/questions  
+POST /api/admin/questions  
+PUT /api/admin/questions/{id}  
+DELETE /api/admin/questions/{id}  
+
+GET /api/admin/sessions  
+DELETE /api/admin/sessions/{id}  
+
+---
+
+## Authentication
+
+- Public endpoints: no authentication
+- Admin endpoints: Basic Auth
+
+---
+
+## Tech Stack
+
+- Spring Boot 3
+- Java 17
+- H2 Database
+- Spring Security
+- OpenAPI (Swagger)
+- Budibase (Frontend)
+
+---
+
+## Run Project
+
+cd backend  
+mvn spring-boot:run  
+
+Open:
+http://localhost:8080
+
+Swagger:
+http://localhost:8080/swagger-ui.html
+
+---
+
+## Deployment
+
+Use GitHub Codespaces:
+- Start Codespace
+- Open port 8080
+- Set to public
+
+---
+
+## Notes
+
+- Frontend is built in Budibase and connected via REST API
+- Backend handles all business logic and validation
+- Project fulfills FHNW requirements
