@@ -225,76 +225,368 @@ An admin cannot delete a category that still has active questions.
 
 ---
 
-## API Design
+# internet-technology-qtd
 
-### Public Endpoints
+QTD (Questions To Discuss) is a web-based application that helps users start meaningful conversations through guided question sessions. It provides themed categories such as friends, dating, deep talk, and fun topics, allowing users to explore structured discussions in an intuitive and visually engaging interface.
 
-GET /api/categories  
-GET /api/categories/{id}  
-GET /api/categories/{id}/questions  
-GET /api/sessions/start/{categoryId}  
-POST /api/sessions  
-GET /api/sessions/{id}  
+The application follows a **two-tier, three-layer architecture** consisting of:
 
-### Admin Endpoints
+* Frontend (Budibase UI)
+* Backend (Spring Boot REST API)
+* Database (Relational schema with multiple entities)
 
-GET /api/admin/categories  
-POST /api/admin/categories  
-PUT /api/admin/categories/{id}  
-DELETE /api/admin/categories/{id}  
+---
 
-GET /api/admin/questions  
-POST /api/admin/questions  
-PUT /api/admin/questions/{id}  
-DELETE /api/admin/questions/{id}  
+# Contents
 
-GET /api/admin/sessions  
-DELETE /api/admin/sessions/{id}  
+* [Analysis](#analysis)
+* [Design](#design)
+* [API Design](#api-design)
+* [Implementation](#implementation)
+* [Project Management](#project-management)
+
+---
+
+# Analysis
+
+## Scenario
+
+QTD addresses a common problem: people often struggle to initiate meaningful conversations in social settings. Whether meeting friends, going on a date, or spending time in a group, conversations can feel repetitive or shallow.
+
+This application solves that by offering structured, themed question sessions. Users select a category and are guided through questions one by one. At the end, they receive a summary of all questions and their responses.
+
+The system is accessible on both desktop and mobile devices and is designed with a consistent and modern user interface.
+
+---
+
+## Actors
+
+### Public User
+
+* Browse categories
+* Start sessions
+* Answer questions
+* View summary
+
+### Administrator
+
+* Log in
+* Manage categories
+* Manage questions
+* View sessions
+
+---
+
+## Use Cases
+
+### Public User
+
+* Browse Categories
+* Start Session
+* Answer Questions
+* View Summary
+
+### Administrator
+
+* Log In
+* Manage Categories (CRUD)
+* Manage Questions (CRUD)
+* View Sessions
+
+---
+
+## User Stories
+
+### Admin
+
+* As an admin, I want to log in so that I can securely manage the system
+* As an admin, I want to manage categories so that I can organize content
+* As an admin, I want to manage questions so that content stays relevant
+
+### User
+
+* As a user, I want to browse categories so that I can choose a topic
+* As a user, I want to start a session so that I can explore questions
+* As a user, I want to answer questions so that I can reflect
+* As a user, I want to see a summary so that I can review the session
+
+---
+
+# Design
+
+## Architecture
+
+The application follows:
+
+* **3 Layers**
+
+  * Controller (API)
+  * Service (Business logic)
+  * Repository (Data access)
+
+* **2 Tiers**
+
+  * Frontend (Budibase)
+  * Backend (Spring Boot)
+
+---
+
+## Database Schema
+
+### Entities
+
+**AppUser**
+
+* id, username, password, role
+
+**Category**
+
+* id, name, slug, description, icon, color, active
+
+**Question**
+
+* id, text, category_id, active
+
+**Session**
+
+* id, category_id, started_at, completed
+
+**SessionAnswer**
+
+* id, session_id, question_id, answer_text
+
+---
+
+## Relationships
+
+* Category → Question (1:N)
+* Category → Session (1:N)
+* Session → SessionAnswer (1:N)
+* Question → SessionAnswer (1:N)
+
+---
+
+## Business Logic
+
+### Rule 1 – Minimum Questions
+
+A session can only start if a category has at least **3 active questions**
+
+### Rule 2 – Safe Delete
+
+A category cannot be deleted if it contains active questions
+
+---
+
+## Frontend Design (Budibase)
+
+The UI is implemented using **Budibase**, following a consistent design system:
+
+### Public Views
+
+* `/` – Category list (cards)
+* `/session/setup` – Player setup
+* `/session/play` – Question flow
+* `/session/play/final` – Summary view
+
+### Admin Views
+
+* `/admin/login`
+* `/admin/categories`
+* `/admin/questions`
+* `/admin/sessions`
+
+The frontend consumes REST APIs dynamically — no hardcoded data.
+
+---
+
+# API Design
+
+## Overview
+
+The backend exposes a REST API structured into:
+
+* **Public endpoints** → no authentication
+* **Admin endpoints** → require Basic Auth
+
+---
+
+## Public Endpoints
+
+| Method | Endpoint                         | Description                    |
+| ------ | -------------------------------- | ------------------------------ |
+| GET    | /api/categories                  | Get all active categories      |
+| GET    | /api/categories/{id}             | Get category by ID             |
+| GET    | /api/categories/{id}/questions   | Get questions by category      |
+| GET    | /api/sessions/start/{categoryId} | Start session (validates rule) |
+| POST   | /api/sessions                    | Submit session answers         |
+| GET    | /api/sessions/{id}               | Get session summary            |
+
+---
+
+## Admin Endpoints
+
+| Method | Endpoint                   |
+| ------ | -------------------------- |
+| GET    | /api/admin/categories      |
+| POST   | /api/admin/categories      |
+| PUT    | /api/admin/categories/{id} |
+| DELETE | /api/admin/categories/{id} |
+
+| Method | Endpoint                  |
+| ------ | ------------------------- |
+| GET    | /api/admin/questions      |
+| GET    | /api/admin/questions/{id} |
+| POST   | /api/admin/questions      |
+| PUT    | /api/admin/questions/{id} |
+| DELETE | /api/admin/questions/{id} |
+
+| Method | Endpoint                 |
+| ------ | ------------------------ |
+| GET    | /api/admin/sessions      |
+| DELETE | /api/admin/sessions/{id} |
+
+---
+
+## DTO Structure
+
+### CategoryDto
+
+* id, name, slug, description, icon, color, active
+
+### QuestionDto
+
+* id, text, categoryId, active
+
+### SessionDto
+
+* id, categoryId, startedAt, completed, answers[]
+
+### SessionRequest
+
+* categoryId
+* answers[]
+
+### SessionAnswerDto
+
+* questionId, answerText
 
 ---
 
 ## Authentication
 
-- Public endpoints: no authentication
-- Admin endpoints: Basic Auth
+* Public endpoints → no auth
+* Admin endpoints → Basic Auth required
+* Role: ADMIN
 
 ---
 
-## Tech Stack
+## Error Handling
 
-- Spring Boot 3
-- Java 17
-- H2 Database
-- Spring Security
-- OpenAPI (Swagger)
-- Budibase (Frontend)
+| Code | Meaning                 |
+| ---- | ----------------------- |
+| 400  | Validation error        |
+| 401  | Unauthorized            |
+| 404  | Not found               |
+| 409  | Business rule conflict  |
+| 422  | Business rule violation |
+| 500  | Server error            |
 
 ---
 
-## Run Project
+## OpenAPI / Swagger
 
-cd backend  
-mvn spring-boot:run  
+The API is documented using **SpringDoc OpenAPI**.
 
-Open:
+Access via:
+
+```
+/swagger-ui.html
+```
+
+---
+
+# Implementation
+
+## Backend
+
+* Java 17
+* Spring Boot 3
+* Spring Data JPA
+* H2 Database
+* Spring Security (Basic Auth)
+* OpenAPI (Swagger)
+
+---
+
+## Frontend
+
+* Budibase (low-code)
+* REST API integration
+* Responsive UI
+* Component-based layout
+
+---
+
+## Running the Project
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+Then open:
+
+```
 http://localhost:8080
-
-Swagger:
-http://localhost:8080/swagger-ui.html
+```
 
 ---
 
-## Deployment
+## Codespaces Deployment
 
-Use GitHub Codespaces:
-- Start Codespace
-- Open port 8080
-- Set to public
+1. Start Codespace
+2. Wait for backend to run
+3. Make port 8080 public
+4. Open provided URL
 
 ---
 
-## Notes
+# Project Management
 
-- Frontend is built in Budibase and connected via REST API
-- Backend handles all business logic and validation
-- Project fulfills FHNW requirements
+## Roles
+
+* Backend / Data: Entities, services
+* Frontend: Budibase UI
+* DevOps / API: Controllers, security, deployment
+
+---
+
+## Milestones
+
+| Milestone     | Status      |
+| ------------- | ----------- |
+| Analysis      | Done        |
+| Domain Design | Done        |
+| Frontend      | Done        |
+| API Design    | Done        |
+| Backend       | In Progress |
+| Security      | Pending     |
+| Integration   | Pending     |
+
+---
+
+# Final Notes
+
+This project fulfills all FHNW requirements:
+
+* Multi-layer architecture
+* 4+ views
+* REST API
+* Business logic
+* Authentication
+* OpenAPI documentation
+* Working demonstrator
+
+---
+
