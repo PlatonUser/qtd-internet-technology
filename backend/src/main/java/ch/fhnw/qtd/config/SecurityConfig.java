@@ -19,7 +19,14 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/", "/api/**", "/h2-console/**").permitAll()
+                .requestMatchers(
+                    "/",
+                    "/api/**",
+                    "/h2-console/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/api-docs/**"
+                ).permitAll()
                 .anyRequest().permitAll()
             )
             .headers(headers -> headers
