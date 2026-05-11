@@ -13,3 +13,15 @@ INSERT INTO question (text, category_id, active) VALUES
 ('When in your life did you feel most alive?', 3, TRUE),
 ('If you could have any superpower for one day, what would you choose?', 4, TRUE),
 ('What is your most controversial food opinion?', 4, TRUE);
+
+INSERT INTO session (category_id, started_at, completed) VALUES
+(1, '2026-04-08 14:30:00', TRUE),
+(1, '2026-04-10 19:15:00', TRUE);
+
+INSERT INTO session_answer (session_id, question_id, player_name, answer_text) VALUES
+(1, 1, 'Alice', 'Building forts in my best friend''s basement.'),
+(1, 1, 'Bob', 'Our trip to the coast when we were 12.'),
+(1, 2, 'Alice', 'Tokyo with the whole crew.'),
+(1, 2, 'Bob', 'A road trip through New Zealand.'),
+(2, 1, 'Charlie', 'Sleepovers playing board games until 3am.'),
+(2, 2, 'Diana', 'Iceland in the winter.');
