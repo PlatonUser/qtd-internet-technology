@@ -1,56 +1,88 @@
-# internet-technology-qtd
-QTD helps users start meaningful conversations by offering themed question sessions in a simple web application. It is useful for friends, couples, or groups who want guided discussion topics.
+# QTD – Questions To Discuss
+
+> **FHNW Internet Technology Group Project**
+> A web application that helps people start meaningful conversations through guided, themed question sessions.
+
+---
+
+## Group Composition
+
+| Name | Contribution |
+|------|-------------|
+| *(Member 1 – Danila Anfilofyev)* | Backend development, data model, services, security, deployment |
+| *(Member 2 – Platon Pashkevych)* | Frontend (Budibase UI), UX design, testing |
+| *(Member 3 – Snizhana Pashkevych)* | API design, controllers, documentation, integration |
+
+---
+
+## Links
+
+| Resource | URL |
+|----------|-----|
+| 🎥 Video Presentation | *(add link – YouTube / SWITCHtube / Microsoft Stream)* |
+| 🌐 Deployed Web Application | *(add Budibase app link)* |
+| 📄 OpenAPI / Swagger Documentation | `https://<codespace-url>/swagger-ui.html` |
+| 💻 GitHub Repository | *(add GitHub repo link)* |
+
+---
+
 ## Contents
 
 - [Analysis](#analysis)
   - [Scenario](#scenario)
-  - [User Stories](#user-stories)
+  - [Actors](#actors)
   - [Use Cases](#use-cases)
-
-- [Design](#design)
-  - [Prototype Design](#prototype-design)
-  - [Domain Design](#domain-design)
-  - [Business Logic](#business-logic)
+  - [User Stories](#user-stories)
+- [Domain Design](#domain-design)
+  - [Domain Model](#domain-model)
   - [Database Schema](#database-schema)
-
+- [Business Logic](#business-logic)
+- [API Design](#api-design)
+- [Frontend Design](#frontend-design)
 - [Implementation](#implementation)
+  - [Architecture](#architecture)
   - [Backend Technology](#backend-technology)
   - [Frontend Technology](#frontend-technology)
-
+  - [Security](#security)
+- [Installation & Running](#installation--running)
+  - [Running Locally](#running-locally)
+  - [GitHub Codespaces](#github-codespaces)
 - [Project Management](#project-management)
   - [Roles](#roles)
   - [Milestones](#milestones)
+
+---
+
 # Analysis
 
 ## Scenario
 
-QTD (Questions To Discuss) is a web-based application designed to help users start meaningful conversations through guided question sessions. In many social situations such as meeting friends, dating, or spending time with a group, people often struggle to initiate interesting or deeper discussions. QTD addresses this problem by providing themed categories of questions that guide users through structured conversation sessions.
+**QTD (Questions To Discuss)** is a web-based application designed to help users start meaningful conversations through guided question sessions. In many social situations — meeting friends, going on a date, or spending time with a group — people often struggle to initiate interesting or deeper discussions. QTD addresses this by providing themed categories of questions that guide users through structured conversation sessions.
 
-Users can open the application, select a category (for example friends, dating, deep conversations, or fun topics), and start a session where questions are displayed one by one. During the session, users can optionally enter short answers or reflections. At the end of the session, the application provides a summary showing all questions and the responses entered during the session.
+Users open the application, browse available categories (such as *Friends*, *Dating*, *Deep Talk*, or *Fun Topics*), and start a session where questions are displayed one by one. During the session, players can optionally enter their name and short answers or reflections. At the end of the session, the application presents a summary showing all questions and the responses entered by each player.
 
-The system is implemented as a responsive web application that works on both desktop and mobile devices. It integrates a frontend user interface, a backend REST API, and a database that stores categories, questions, users, and session data.
+The system is implemented as a responsive web application that works on both desktop and mobile devices. It integrates a Budibase frontend, a Spring Boot REST API backend, and an H2 relational database that stores categories, questions, sessions, and answers.
 
-In addition to public users who participate in question sessions, the system includes an administrator role. Administrators can log in and manage the content of the application, such as categories and questions, ensuring that the system remains relevant and well-maintained.
-
-The main value of QTD is to support meaningful conversations in a simple and accessible way, while demonstrating a complete web application architecture consisting of frontend, backend, and database layers.
+In addition to public users who participate in question sessions, the system includes an **administrator role**. Administrators can log in and manage content — creating, editing, and deleting categories and questions — to keep the application relevant and well-maintained.
 
 ---
 
 ## Actors
 
-The system contains two main actors:
+The system defines two main actors:
 
 **Public User**
 - Browses available question categories
-- Starts question sessions
+- Starts a question session for a chosen category
+- Enters player names before the session begins
 - Answers questions during the session
-- Views a summary of the session
+- Views a summary of all questions and answers at the end
 
 **Administrator**
-- Logs into the system
-- Manages categories
-- Manages questions
-- Views session data
+- Logs into the system via Basic Authentication
+- Creates, edits, and deletes categories
+- Creates, edits, and deletes questions assigned to categories
+- Views session data and usage statistics
 
 ---
 
@@ -59,35 +91,32 @@ The system contains two main actors:
 ### Public User Use Cases
 
 **Browse Categories**
-- The user opens the application and sees a list of available question categories.
+The user opens the application and sees a responsive grid of available question categories, each showing an icon, name, and description.
 
 **Start Session**
-- The user selects a category and starts a question session.
+The user selects a category and is prompted to enter player names. A new session is created and a set of questions is randomly selected from the category.
 
-**View Questions**
-- The system displays questions one by one during the session.
-
-**Enter Answers**
-- The user can optionally enter short answers or reflections for each question.
+**Answer Questions**
+Questions are displayed one by one. Each player can enter a short answer or leave it blank and skip to the next question.
 
 **View Session Summary**
-- At the end of the session, the system displays a summary containing the questions and the user's answers.
+After all questions are answered, the application displays a summary page showing each question alongside the answers provided by all players during the session.
 
 ---
 
 ### Administrator Use Cases
 
 **Log In**
-- The administrator logs into the system using authentication.
+The administrator authenticates using HTTP Basic Auth credentials to gain access to the admin panel.
 
-**Manage Categories**
-- The administrator can create, edit, or delete categories.
+**Manage Categories (CRUD)**
+The administrator can create new categories, view all categories in a list, update category details (name, description, icon, color, active status), and delete categories — subject to the business rule that prevents deletion while active questions exist.
 
-**Manage Questions**
-- The administrator can create, edit, or delete questions assigned to categories.
+**Manage Questions (CRUD)**
+The administrator can create new questions linked to a category, view all questions with optional filtering by category, update question text or active status, and delete questions.
 
 **View Sessions**
-- The administrator can view existing sessions and session summaries.
+The administrator can view a list of all sessions, including when they started, which category was used, and whether the session was completed.
 
 ---
 
@@ -95,460 +124,449 @@ The system contains two main actors:
 
 ### Administrator User Stories
 
-As an administrator, I want to log in to the system so that I can securely manage the application.
-
-As an administrator, I want to view categories in a list so that I can manage existing discussion topics.
-
-As an administrator, I want to create and edit categories so that I can organize questions into meaningful groups.
-
-As an administrator, I want to create and edit questions so that I can maintain the discussion content.
-
-As an administrator, I want to delete outdated categories or questions so that the application remains relevant.
-
-As an administrator, I want to view sessions so that I can monitor how the application is used.
-
----
+| # | User Story |
+|---|-----------|
+| US-A1 | As an **admin**, I want to **log in to the system** so that I can **securely manage the application**. |
+| US-A2 | As an **admin**, I want to **use the application on different mobile devices and desktop computers** so that I can **manage it from anywhere**. |
+| US-A3 | As an **admin**, I want to **see a consistent visual appearance** so that I can **navigate easily**. |
+| US-A4 | As an **admin**, I want to **view categories in a list** so that I can **manage existing discussion topics**. |
+| US-A5 | As an **admin**, I want to **create and edit categories** so that I can **organise questions into meaningful groups**. |
+| US-A6 | As an **admin**, I want to **create and edit questions** so that I can **maintain the discussion content**. |
+| US-A7 | As an **admin**, I want to **delete outdated categories or questions** so that **the application remains relevant**. |
+| US-A8 | As an **admin**, I want to **view sessions** so that I can **monitor how the application is used**. |
 
 ### Public User Stories
 
-As a user, I want to browse question categories so that I can choose a topic for a conversation.
-
-As a user, I want to start a question session so that I can explore discussion topics with others.
-
-As a user, I want to see questions one by one so that the conversation flows naturally.
-
-As a user, I want to optionally write answers during a session so that I can reflect on the questions.
-
-As a user, I want to see a summary of the session so that I can review all questions and answers at the end.
+| # | User Story |
+|---|-----------|
+| US-U1 | As a **user**, I want to **browse question categories** so that I can **choose a topic for a conversation**. |
+| US-U2 | As a **user**, I want to **use list views** so that I can **access public pages**. |
+| US-U3 | As a **user**, I want to **start a question session** so that I can **explore discussion topics with others**. |
+| US-U4 | As a **user**, I want to **see questions one by one** so that **the conversation flows naturally**. |
+| US-U5 | As a **user**, I want to **optionally write answers during a session** so that I can **reflect on the questions**. |
+| US-U6 | As a **user**, I want to **see a summary of the session** so that I can **review all questions and answers at the end**. |
 
 ---
 
-# Design
+# Domain Design
+
+## Domain Model
+
+The QTD domain model is built around five core entities that capture the full lifecycle of a question session — from content management to user interaction and answer recording.
+
+```
+┌─────────────┐       ┌──────────────┐       ┌──────────────────┐
+│   AppUser   │       │   Category   │       │     Question     │
+│─────────────│       │──────────────│       │──────────────────│
+│ id          │       │ id           │1     *│ id               │
+│ username    │       │ name         ├───────►│ text             │
+│ password    │       │ slug         │       │ category (FK)    │
+│ role        │       │ description  │       │ active           │
+└─────────────┘       │ icon         │       └──────────────────┘
+                      │ color        │              │
+                      │ active       │1             │ *
+                      └──────────────┘       ┌──────────────────┐
+                              │              │  SessionAnswer   │
+                              │1             │──────────────────│
+                              │              │ id               │
+                              ▼*             │ session (FK)     │
+                      ┌──────────────┐       │ question (FK)    │
+                      │   Session    │1     *│ playerName       │
+                      │──────────────├───────►│ answerText       │
+                      │ id           │       └──────────────────┘
+                      │ category(FK) │
+                      │ startedAt    │
+                      │ completed    │
+                      └──────────────┘
+```
+
+**Relationships:**
+- `Category → Question` (One-to-Many): A category contains multiple questions. Deletion cascades.
+- `Category → Session` (One-to-Many): A session is created within a specific category.
+- `Session → SessionAnswer` (One-to-Many): A session captures one answer per player per question.
+- `Question → SessionAnswer` (One-to-Many): A question can be answered across multiple sessions.
+
+---
 
 ## Database Schema
 
-The QTD application uses a relational database with five main entities that store categories, questions, user sessions, and responses. The database is designed to support the core functionality of managing discussion categories, displaying questions, recording user sessions, and storing user answers.
+The application uses an **H2 in-memory relational database**, seeded with sample data on startup via `data.sql`.
 
-### Entity Overview
+### Table Overview
 
-**AppUser**
-- Stores administrator credentials and role information
-- Fields: id, username (unique), password, role
+| Table | Purpose |
+|-------|---------|
+| `app_user` | Administrator credentials and roles |
+| `category` | Discussion topic categories |
+| `question` | Individual questions linked to a category |
+| `session` | A user's conversation session within a category |
+| `session_answer` | Answers recorded per player per question per session |
 
-**Category**
-- Represents a discussion category grouping related questions
-- Fields: id, name, slug (unique), description, icon, color, active
-- Example categories: Friends, Dating, Deep Talk, Fun Topics
+### Detailed Table Structure
 
-**Question**
-- Individual questions belonging to a category
-- Fields: id, text, category_id (foreign key), active
-- Each category can contain multiple questions
+**`app_user`**
 
-**Session**
-- Represents a user's discussion session within a category
-- Fields: id, category_id (foreign key), started_at, completed
-- Tracks when a session begins and whether it has been completed
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | BIGINT | PK, auto-generated |
+| username | VARCHAR | NOT NULL, UNIQUE |
+| password | VARCHAR | NOT NULL |
+| role | VARCHAR | NOT NULL, default `ADMIN` |
 
-**SessionAnswer**
-- Stores user answers provided during a session
-- Fields: id, session_id (foreign key), question_id (foreign key), answer_text, answered_at
-- Links sessions to specific questions and captures user responses
+**`category`**
 
----
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | BIGINT | PK, auto-generated |
+| name | VARCHAR | NOT NULL |
+| slug | VARCHAR | NOT NULL, UNIQUE |
+| description | VARCHAR | nullable |
+| icon | VARCHAR | NOT NULL, default `💬` |
+| color | VARCHAR | default `general` |
+| active | BOOLEAN | NOT NULL, default `true` |
 
-### Entity Relationships
+**`question`**
 
-```
-Category (1) ──── (*) Question
-Category (1) ──── (*) Session
-Question (1) ──── (*) SessionAnswer
-Session (1) ──── (*) SessionAnswer
-```
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | BIGINT | PK, auto-generated |
+| text | VARCHAR(500) | NOT NULL, min 10 chars |
+| category_id | BIGINT | FK → category.id |
+| active | BOOLEAN | NOT NULL, default `true` |
 
-**Relationship Details:**
+**`session`**
 
-- **Category → Question** (One-to-Many): Each category contains multiple questions. Deleting a category cascades to all its questions.
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | BIGINT | PK, auto-generated |
+| category_id | BIGINT | FK → category.id |
+| started_at | TIMESTAMP | NOT NULL |
+| completed | BOOLEAN | default `false` |
 
-- **Category → Session** (One-to-Many): Each category has multiple sessions. Users select a category to start a new session.
+**`session_answer`**
 
-- **Question → SessionAnswer** (One-to-Many): Each question can be answered multiple times across different sessions.
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | BIGINT | PK, auto-generated |
+| session_id | BIGINT | FK → session.id |
+| question_id | BIGINT | FK → question.id |
+| player_name | VARCHAR | nullable |
+| answer_text | VARCHAR(1000) | nullable |
 
-- **Session → SessionAnswer** (One-to-Many): Each session contains answers for multiple questions in that category.
+### Seed Data
 
----
-
-### Database Table Structure
-
-| Table | Columns | Key Constraints |
-|-------|---------|-----------------|
-| **app_user** | id (PK), username (UK), password, role | Primary Key: id, Unique: username |
-| **category** | id (PK), name, slug (UK), description, icon, color, active | Primary Key: id, Unique: slug |
-| **question** | id (PK), text, category_id (FK), active | Primary Key: id, Foreign Key: category_id → category.id |
-| **session** | id (PK), category_id (FK), started_at, completed | Primary Key: id, Foreign Key: category_id → category.id |
-| **session_answer** | id (PK), session_id (FK), question_id (FK), answer_text, answered_at | Primary Key: id, Foreign Keys: session_id → session.id, question_id → question.id |
-
----
-
-### Data Initialization
-
-The application seeds the database with sample data including:
+The database is pre-populated (via `data.sql`) with:
 - **4 Categories**: Friends, Dating, Deep Talk, Fun Topics
-- **20 Questions**: 5 questions per category
-- **Sample Sessions**: 2 example sessions with user answers
-
-This seed data is defined in `src/main/resources/data.sql` and is automatically loaded when the application starts.
-
-### Wireframe & Prototype
-
-The UI was first prototyped in **Budibase** to establish screen layouts, colour system, and navigation flow before implementation. Key screens designed:
-
-- `/` – Home: category cards grid with "Start Session" buttons
-- `/session/setup` – Player setup: enter player names before starting
-- `/session/play` – Session view: question-by-question with answer inputs
-- `/session/play/final` – Session view: all questions are answered, button "finish" appear
-- `/admin/login` – Admin login form
-- `/admin/dashboard` – Stats overview + category breakdown table
-- `/admin/categories` – Category CRUD table
-- `/admin/questions` – Question CRUD table
-- `/admin/sessions` – Sessions read-only list
-
-
-**Rule 1 – Minimum questions required to start a session**
-
-A session can only be started if the chosen category has **at least 3 active questions**. 
-
-
-**Rule 2 – Cannot delete a category with active questions**
-
-An admin cannot delete a category that still has active questions. 
+- **8 Questions**: 2 per category (expandable)
+- **2 Sample Sessions** with player answers to demonstrate the summary feature
 
 ---
 
-# internet-technology-qtd
+# Business Logic
 
-QTD (Questions To Discuss) is a web-based application that helps users start meaningful conversations through guided question sessions. It provides themed categories such as friends, dating, deep talk, and fun topics, allowing users to explore structured discussions in an intuitive and visually engaging interface.
+The service layer enforces two key business rules that correspond to real enterprise-level constraints:
 
-The application follows a **two-tier, three-layer architecture** consisting of:
+### Rule 1 – Minimum Active Questions Required to Start a Session
 
-* Frontend (Budibase UI)
-* Backend (Spring Boot REST API)
-* Database (Relational schema with multiple entities)
+A session can only be started if the selected category has **at least 3 active questions**.
 
----
+**Location:** `SessionService.getQuestionsForSession()` — fetches only active questions from the category. If fewer than 3 exist, the session cannot meaningfully proceed and the frontend blocks the start action.
 
-# Contents
+**Justification:** Prevents sessions that would feel incomplete or trivially short, ensuring a quality experience.
 
-* [Analysis](#analysis)
-* [Design](#design)
-* [API Design](#api-design)
-* [Implementation](#implementation)
-* [Project Management](#project-management)
+### Rule 2 – Cannot Delete a Category That Has Active Questions
 
----
+An administrator cannot delete a category while it still contains active questions.
 
-# Analysis
+**Location:** Enforced at the service and controller level via `CategoryService`. The frontend admin panel checks this condition and displays an appropriate warning before allowing the delete action.
 
-## Scenario
-
-QTD addresses a common problem: people often struggle to initiate meaningful conversations in social settings. Whether meeting friends, going on a date, or spending time in a group, conversations can feel repetitive or shallow.
-
-This application solves that by offering structured, themed question sessions. Users select a category and are guided through questions one by one. At the end, they receive a summary of all questions and their responses.
-
-The system is accessible on both desktop and mobile devices and is designed with a consistent and modern user interface.
-
----
-
-## Actors
-
-### Public User
-
-* Browse categories
-* Start sessions
-* Answer questions
-* View summary
-
-### Administrator
-
-* Log in
-* Manage categories
-* Manage questions
-* View sessions
-
----
-
-## Use Cases
-
-### Public User
-
-* Browse Categories
-* Start Session
-* Answer Questions
-* View Summary
-
-### Administrator
-
-* Log In
-* Manage Categories (CRUD)
-* Manage Questions (CRUD)
-* View Sessions
-
----
-
-## User Stories
-
-### Admin
-
-* As an admin, I want to log in so that I can securely manage the system
-* As an admin, I want to manage categories so that I can organize content
-* As an admin, I want to manage questions so that content stays relevant
-
-### User
-
-* As a user, I want to browse categories so that I can choose a topic
-* As a user, I want to start a session so that I can explore questions
-* As a user, I want to answer questions so that I can reflect
-* As a user, I want to see a summary so that I can review the session
-
----
-
-# Design
-
-## Architecture
-
-The application follows:
-
-* **3 Layers**
-
-  * Controller (API)
-  * Service (Business logic)
-  * Repository (Data access)
-
-* **2 Tiers**
-
-  * Frontend (Budibase)
-  * Backend (Spring Boot)
-
----
-
-## Database Schema
-
-### Entities
-
-**AppUser**
-
-* id, username, password, role
-
-**Category**
-
-* id, name, slug, description, icon, color, active
-
-**Question**
-
-* id, text, category_id, active
-
-**Session**
-
-* id, category_id, started_at, completed
-
-**SessionAnswer**
-
-* id, session_id, question_id, answer_text
-
----
-
-## Relationships
-
-* Category → Question (1:N)
-* Category → Session (1:N)
-* Session → SessionAnswer (1:N)
-* Question → SessionAnswer (1:N)
-
----
-
-## Business Logic
-
-### Rule 1 – Minimum Questions
-
-A session can only start if a category has at least **3 active questions**
-
-### Rule 2 – Safe Delete
-
-A category cannot be deleted if it contains active questions
-
----
-
-## Frontend Design (Budibase)
-
-The UI is implemented using **Budibase**, following a consistent design system:
-
-### Public Views
-
-* `/` – Category list (cards)
-* `/session/setup` – Player setup
-* `/session/play` – Question flow
-* `/session/play/final` – Summary view
-
-### Admin Views
-
-* `/admin/login`
-* `/admin/categories`
-* `/admin/questions`
-* `/admin/sessions`
-
-The frontend consumes REST APIs dynamically — no hardcoded data.
+**Justification:** Prevents accidental loss of content that is actively in use, mirroring a standard referential integrity business rule.
 
 ---
 
 # API Design
 
-## Overview
+The backend exposes a RESTful API. All endpoints follow REST conventions (CRUD via HTTP verbs, resource-based URLs, JSON request/response bodies).
 
-The backend exposes a REST API structured into:
+**Base URL:** `http://localhost:8080`
 
-* **Public endpoints** → no authentication
-* **Admin endpoints** → require Basic Auth
+**OpenAPI docs:** `http://localhost:8080/swagger-ui.html`
 
----
-
-## Public Endpoints
-
-| Method | Endpoint                         | Description                    |
-| ------ | -------------------------------- | ------------------------------ |
-| GET    | /api/categories                  | Get all active categories      |
-| GET    | /api/categories/{id}             | Get category by ID             |
-| GET    | /api/categories/{id}/questions   | Get questions by category      |
-| GET    | /api/sessions/start/{categoryId} | Start session (validates rule) |
-| POST   | /api/sessions                    | Submit session answers         |
-| GET    | /api/sessions/{id}               | Get session summary            |
+**H2 Console:** `http://localhost:8080/h2-console`
 
 ---
 
-## Admin Endpoints
+## Public Endpoints (no authentication required)
 
-| Method | Endpoint                   |
-| ------ | -------------------------- |
-| GET    | /api/admin/categories      |
-| POST   | /api/admin/categories      |
-| PUT    | /api/admin/categories/{id} |
-| DELETE | /api/admin/categories/{id} |
+### Categories
 
-| Method | Endpoint                  |
-| ------ | ------------------------- |
-| GET    | /api/admin/questions      |
-| GET    | /api/admin/questions/{id} |
-| POST   | /api/admin/questions      |
-| PUT    | /api/admin/questions/{id} |
-| DELETE | /api/admin/questions/{id} |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/categories` | Get all categories |
+| `GET` | `/api/categories/{id}` | Get a single category by ID |
 
-| Method | Endpoint                 |
-| ------ | ------------------------ |
-| GET    | /api/admin/sessions      |
-| DELETE | /api/admin/sessions/{id} |
+### Questions
 
----
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/questions` | Get all questions (optional `?categoryId=&activeOnly=true`) |
+| `GET` | `/api/questions/{id}` | Get a single question by ID |
 
-## DTO Structure
+### Sessions
 
-### CategoryDto
-
-* id, name, slug, description, icon, color, active
-
-### QuestionDto
-
-* id, text, categoryId, active
-
-### SessionDto
-
-* id, categoryId, startedAt, completed, answers[]
-
-### SessionRequest
-
-* categoryId
-* answers[]
-
-### SessionAnswerDto
-
-* questionId, answerText
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/sessions` | Create a new session (`{ "categoryId": 1 }`) |
+| `GET` | `/api/sessions/{id}` | Get session details |
+| `GET` | `/api/sessions/{id}/questions?limit=5` | Get randomised questions for a session |
+| `POST` | `/api/sessions/{id}/answers` | Submit an answer (`{ "questionId", "playerName", "answerText" }`) |
+| `GET` | `/api/sessions/{id}/answers` | Get all answers for a session |
+| `GET` | `/api/sessions/{id}/answer-count` | Get the count of answers submitted |
+| `PUT` | `/api/sessions/{id}/complete` | Mark a session as completed |
 
 ---
 
-## Authentication
+## Admin Endpoints (Basic Auth required)
 
-* Public endpoints → no auth
-* Admin endpoints → Basic Auth required
-* Role: ADMIN
+### Category Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/categories` | List all categories |
+| `POST` | `/api/categories` | Create a category |
+| `PUT` | `/api/categories/{id}` | Update a category |
+| `DELETE` | `/api/categories/{id}` | Delete a category (if no active questions) |
+
+### Question Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/questions` | List all questions |
+| `POST` | `/api/questions` | Create a question (`{ "text", "categoryId" }`) |
+| `PUT` | `/api/questions/{id}` | Update a question |
+| `DELETE` | `/api/questions/{id}` | Delete a question |
+
+### Session Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/sessions` | List all sessions (ordered by date desc) |
+| `DELETE` | `/api/sessions/{id}` | Delete a session |
 
 ---
 
-## Error Handling
+## Error Responses
 
-| Code | Meaning                 |
-| ---- | ----------------------- |
-| 400  | Validation error        |
-| 401  | Unauthorized            |
-| 404  | Not found               |
-| 409  | Business rule conflict  |
-| 422  | Business rule violation |
-| 500  | Server error            |
+| HTTP Code | Meaning |
+|-----------|---------|
+| `400` | Validation error (e.g. question text too short) |
+| `401` | Unauthorized (admin endpoint without credentials) |
+| `404` | Resource not found |
+| `409` | Business rule conflict (e.g. category has active questions) |
+| `422` | Business rule violation (e.g. not enough questions to start) |
+| `500` | Internal server error |
 
 ---
 
-## OpenAPI / Swagger
+# Frontend Design
 
-The API is documented using **SpringDoc OpenAPI**.
+The frontend is implemented using **Budibase** (low-code), integrated with the Spring Boot REST API.
 
-Access via:
+The UI follows a consistent design system with a card-based layout, emoji icons, colour-coded categories, and responsive behaviour across mobile and desktop viewports.
 
-```
-/swagger-ui.html
-```
+## Views
+
+### Public Views
+
+| Route | View | Description |
+|-------|------|-------------|
+| `/` | **Home** | Responsive grid of category cards with icon, name, description, and "Start Session" button |
+| `/session/setup` | **Player Setup** | Form to enter player names before a session begins |
+| `/session/play` | **Session Play** | Question-by-question flow; each player enters their answer in sequence |
+| `/session/play/final` | **Session Summary** | Final summary showing all questions and answers for all players |
+
+### Admin Views
+
+| Route | View | Description |
+|-------|------|-------------|
+| `/admin/login` | **Admin Login** | Secure login form using Basic Auth |
+| `/admin/dashboard` | **Dashboard** | Overview stats and category breakdown |
+| `/admin/categories` | **Category Management** | CRUD table for categories |
+| `/admin/questions` | **Question Management** | CRUD table for questions, filterable by category |
+| `/admin/sessions` | **Session List** | Read-only list of all sessions with metadata |
 
 ---
 
 # Implementation
 
-## Backend
+## Architecture
 
-* Java 17
-* Spring Boot 3
-* Spring Data JPA
-* H2 Database
-* Spring Security (Basic Auth)
-* OpenAPI (Swagger)
+The application follows a **three-layer, two-tier architecture**:
+
+```
+┌──────────────────────────────────────────────────┐
+│               FRONTEND TIER (Budibase)           │
+│          Presentation / UI Layer                  │
+│   Category cards, session flow, admin panels     │
+└──────────────────────┬───────────────────────────┘
+                       │ REST API (HTTP / JSON)
+┌──────────────────────▼───────────────────────────┐
+│              BACKEND TIER (Spring Boot)           │
+│                                                   │
+│  ┌─────────────────────────────────────────────┐ │
+│  │   Controller Layer (REST API endpoints)     │ │
+│  │   CategoryController, QuestionController,   │ │
+│  │   SessionController, HomeController         │ │
+│  └──────────────────────┬──────────────────────┘ │
+│                         │                         │
+│  ┌──────────────────────▼──────────────────────┐ │
+│  │   Service Layer (Business Logic)            │ │
+│  │   CategoryService, QuestionService,         │ │
+│  │   SessionService                            │ │
+│  └──────────────────────┬──────────────────────┘ │
+│                         │                         │
+│  ┌──────────────────────▼──────────────────────┐ │
+│  │   Repository Layer (Data Access / JPA)      │ │
+│  │   CategoryRepository, QuestionRepository,   │ │
+│  │   SessionRepository, SessionAnswerRepository│ │
+│  └──────────────────────┬──────────────────────┘ │
+│                         │                         │
+│  ┌──────────────────────▼──────────────────────┐ │
+│  │   H2 In-Memory Relational Database          │ │
+│  └─────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────┘
+```
+
+**Design Patterns Used:**
+- **MVC / Layered Architecture** – strict separation of controllers, services, and repositories
+- **Repository Pattern** – Spring Data JPA interfaces abstract all database operations
+- **Builder Pattern** – Lombok `@Builder` used consistently across all entities
+- **DRY Principle** – shared service logic avoids duplication between controller endpoints
+- **CRUD Paradigm** – all entities expose full Create, Read, Update, Delete operations via REST
 
 ---
 
-## Frontend
+## Backend Technology
 
-* Budibase (low-code)
-* REST API integration
-* Responsive UI
-* Component-based layout
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Java | 17 | Programming language |
+| Spring Boot | 3.2.0 | Application framework |
+| Spring Data JPA | (Boot-managed) | ORM and repository pattern |
+| Spring Security | (Boot-managed) | Authentication and CORS |
+| Spring Validation | (Boot-managed) | Bean validation (`@NotBlank`, `@Size`) |
+| H2 Database | (Boot-managed) | In-memory relational database |
+| SpringDoc OpenAPI | 2.3.0 | Swagger/OpenAPI 3.0 documentation |
+| Lombok | (Boot-managed) | Boilerplate reduction (`@Getter`, `@Builder`, etc.) |
+| Maven | 3.6.3 | Build and dependency management |
+
+**Package structure:**
+```
+ch.fhnw.qtd
+├── QtdApplication.java        # Application entry point
+├── config/
+│   └── SecurityConfig.java    # CORS and security filter chain
+├── controller/
+│   ├── CategoryController.java
+│   ├── QuestionController.java
+│   ├── SessionController.java
+│   └── HomeController.java
+├── model/
+│   ├── AppUser.java
+│   ├── Category.java
+│   ├── Question.java
+│   ├── Session.java
+│   └── SessionAnswer.java
+├── repository/
+│   ├── CategoryRepository.java
+│   ├── QuestionRepository.java
+│   ├── SessionRepository.java
+│   └── SessionAnswerRepository.java
+└── service/
+    ├── CategoryService.java
+    ├── QuestionService.java
+    └── SessionService.java
+```
 
 ---
 
-## Running the Project
+## Frontend Technology
+
+| Technology | Purpose |
+|------------|---------|
+| **Budibase** | Low-code frontend application builder |
+| REST API integration | All data is fetched dynamically from the Spring Boot backend |
+| Responsive layout | Works on mobile and desktop without modifications |
+| Component-based design | Reusable UI components for cards, forms, and tables |
+
+The frontend was first prototyped in Budibase to establish screen layouts, colour system, and navigation flow before implementing the final version.
+
+---
+
+## Security
+
+The application implements **HTTP Basic Authentication** for admin endpoints via Spring Security:
+
+- **Public endpoints** (`/api/categories`, `/api/questions`, `/api/sessions/**`) → no authentication required
+- **Admin CRUD operations** → require valid admin credentials via `Authorization: Basic <base64>` header
+- **CORS** → configured to allow requests from Budibase (`https://inttech.budibase.app`) and all origins (`*`) for development
+- **H2 Console** and **Swagger UI** → accessible without authentication for development/demo purposes
+- **CSRF** → disabled (stateless REST API with no session cookies)
+
+Admin credentials are set in `application.properties` / Spring Security's in-memory user store.
+
+> **Default admin credentials (for demo):** `admin` / `admin` *(change before production use)*
+
+---
+
+# Installation & Running
+
+## Prerequisites
+
+- Java 17+
+- Maven 3.6+
+
+## Running Locally
 
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd qtd-internet-technology
+
+# Start the backend
 cd backend
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
-Then open:
+The backend will start on `http://localhost:8080`.
 
-```
-http://localhost:8080
-```
+| URL | Description |
+|-----|-------------|
+| `http://localhost:8080/` | API welcome message |
+| `http://localhost:8080/api/categories` | Categories endpoint |
+| `http://localhost:8080/swagger-ui.html` | OpenAPI / Swagger UI |
+| `http://localhost:8080/h2-console` | H2 Database console |
+
+**H2 Console connection settings:**
+- JDBC URL: `jdbc:h2:mem:qtddb`
+- Username: `sa`
+- Password: *(leave blank)*
 
 ---
 
-## Codespaces Deployment
+## GitHub Codespaces
 
-1. Start Codespace
-2. Wait for backend to run
-3. Make port 8080 public
-4. Open provided URL
+The project includes a `.devcontainer/devcontainer.json` pre-configured for GitHub Codespaces with Java 17, Maven, and Node 18.
+
+1. Open the repository on GitHub and click **"Code" → "Codespaces" → "Create codespace"**
+2. Wait for the container to build and dependencies to install
+3. In the terminal, run:
+   ```bash
+   cd backend && ./mvnw spring-boot:run
+   ```
+4. When port `8080` becomes available, click **"Open in Browser"** or copy the Codespace URL
+5. **Make port 8080 public** in the Ports tab so the Budibase frontend can reach the API
+6. The Swagger UI will be available at: `https://<codespace-name>-8080.app.github.dev/swagger-ui.html`
 
 ---
 
@@ -556,37 +574,43 @@ http://localhost:8080
 
 ## Roles
 
-* Backend / Data: Entities, services
-* Frontend: Budibase UI
-* DevOps / API: Controllers, security, deployment
+| Role | Responsibilities |
+|------|-----------------|
+| **Backend / Data** | Domain model design, JPA entities, repositories, service layer, H2 seed data |
+| **Frontend / UX** | Budibase application design and implementation, UI/UX consistency, responsive layout |
+| **API / DevOps** | REST controllers, Spring Security, OpenAPI documentation, GitHub Codespaces configuration |
+| **Documentation** | README, analysis, use cases, user stories, domain design, milestone tracking |
 
 ---
 
 ## Milestones
 
-| Milestone     | Status      |
-| ------------- | ----------- |
-| Analysis      | Done        |
-| Domain Design | Done        |
-| Frontend      | Done        |
-| API Design    | Done        |
-| Backend       | In Progress |
-| Security      | Pending     |
-| Integration   | Pending     |
+| # | Milestone | Description | Status |
+|---|-----------|-------------|--------|
+| 1 | **Analysis** | Scenario ideation, use case analysis, user story writing | ✅ Done |
+| 2 | **Domain Design** | Domain model definition, database schema, entity relationships | ✅ Done |
+| 3 | **Frontend Implementation** | Budibase UI design, prototyping, and realization of all views | ✅ Done |
+| 4 | **Business Logic & API Design** | Definition of business rules, REST API design, endpoint specification | ✅ Done |
+| 5 | **Data & API Implementation** | Implementation of JPA repositories, services, and REST controllers | ✅ Done |
+| 6 | **Security** | Spring Security configuration, Basic Auth for admin endpoints, CORS | ✅ Done |
+| 7 | **Demonstrator** | Frontend–backend integration, end-to-end testing, Codespaces deployment | ✅ Done |
 
 ---
 
-# Final Notes
+## Project Summary
 
-This project fulfills all FHNW requirements:
+QTD fulfils all FHNW Internet Technology group project requirements:
 
-* Multi-layer architecture
-* 4+ views
-* REST API
-* Business logic
-* Authentication
-* OpenAPI documentation
-* Working demonstrator
-
----
-
+- ✅ **Multi-device responsive web application** (mobile + desktop via Budibase)
+- ✅ **Consistent visual appearance** across all views
+- ✅ **List views** for categories (public) and CRUD tables (admin)
+- ✅ **Edit and create views** for category and question management
+- ✅ **Admin login** with Basic Authentication
+- ✅ **Two-tier, three-layer architecture** (Frontend / Controller / Service / Repository / Database)
+- ✅ **4+ entities** in the database schema (AppUser, Category, Question, Session, SessionAnswer)
+- ✅ **4+ distinct views** (Home, Session Setup, Session Play, Session Summary, Admin panels)
+- ✅ **Business logic** with two enforced business rules
+- ✅ **OpenAPI 3.0 documentation** via SpringDoc / Swagger UI
+- ✅ **GitHub version control** throughout the project
+- ✅ **GitHub Codespaces** deployment configuration
+- ✅ **OOP, design patterns, DRY, CRUD paradigm** applied throughout
