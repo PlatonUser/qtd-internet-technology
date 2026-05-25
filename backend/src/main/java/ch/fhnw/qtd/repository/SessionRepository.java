@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface SessionRepository extends JpaRepository<Session, Long> {
     List<Session> findAllByOrderByStartedAtDesc();
+    long countByCategoryId(Long categoryId);
 }

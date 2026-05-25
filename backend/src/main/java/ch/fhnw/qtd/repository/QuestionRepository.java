@@ -11,4 +11,5 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findByCategoryId(Long categoryId);
     List<Question> findByCategoryIdAndActive(Long categoryId, boolean active);
     List<Question> findByActive(boolean active);
+    long countByCategoryIdAndActive(Long categoryId, boolean active);
 }
