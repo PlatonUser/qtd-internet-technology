@@ -10,4 +10,5 @@ import java.util.List;
 public interface SessionAnswerRepository extends JpaRepository<SessionAnswer, Long> {
     List<SessionAnswer> findBySessionId(Long sessionId);
     long countBySessionId(Long sessionId);
+    void deleteBySessionIdAndQuestionId(Long sessionId, Long questionId);
 }

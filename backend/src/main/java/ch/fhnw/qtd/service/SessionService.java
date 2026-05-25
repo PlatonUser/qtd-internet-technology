@@ -10,6 +10,7 @@ import ch.fhnw.qtd.repository.SessionAnswerRepository;
 import ch.fhnw.qtd.repository.SessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,7 +38,6 @@ public class SessionService {
         return sessionRepository.findById(id).orElse(null);
     }
 
-    /** Creates a session with given players and snapshots question IDs. */
     public Session createSession(Long categoryId, List<String> players) {
         Category category = categoryRepository.findById(categoryId).orElse(null);
         if (category == null) return null;
@@ -67,7 +67,6 @@ public class SessionService {
                         .build());
     }
 
-    /** Legacy single-arg version kept for the REST controller. */
     public Session createSession(Long categoryId) {
         return createSession(categoryId, new ArrayList<>());
     }
@@ -83,7 +82,6 @@ public class SessionService {
         sessionRepository.deleteById(id);
     }
 
-    /** Returns the questions belonging to this session, in stored order. */
     public List<Question> getQuestionsForSession(Long sessionId) {
         Session session = sessionRepository.findById(sessionId).orElse(null);
         if (session == null) return Collections.emptyList();
@@ -96,14 +94,12 @@ public class SessionService {
                     .collect(Collectors.toList());
         }
 
-        // legacy fallback: no snapshot — derive from category
         if (session.getCategory() == null) return Collections.emptyList();
         List<Question> all = questionRepository.findByCategoryIdAndActive(
                 session.getCategory().getId(), true);
         return all.stream().limit(QUESTIONS_PER_SESSION).collect(Collectors.toList());
     }
 
-    /** Kept for the REST controller signature compatibility. */
     public List<Question> getQuestionsForSession(Long sessionId, int limit) {
         return getQuestionsForSession(sessionId);
     }
@@ -120,6 +116,34 @@ public class SessionService {
                         .playerName(playerName)
                         .answerText(answerText)
                         .build());
+    }
+
+    /** Saves all player answers for a given question. Replaces any previous answers. */
+    @Transactional
+    public void saveAnswersForQuestion(Long sessionId, Long questionId,
+                                       List<String> playerNames, List<String> answerTexts) {
+        Session session = sessionRepository.findById(sessionId).orElse(null);
+        if (session == null) return;
+        Question question = questionRepository.findById(questionId).orElse(null);
+        if (question == null) return;
+
+        // wipe previous answers for this question in this session (so re-submits don't duplicate)
+        answerRepository.deleteBySessionIdAndQuestionId(sessionId, questionId);
+
+        if (playerNames == null) playerNames = Collections.emptyList();
+        if (answerTexts == null) answerTexts = Collections.emptyList();
+
+        for (int i = 0; i < playerNames.size(); i++) {
+            String raw = (i < answerTexts.size() && answerTexts.get(i) != null)
+                    ? answerTexts.get(i).trim() : "";
+            answerRepository.save(
+                    SessionAnswer.builder()
+                            .session(session)
+                            .question(question)
+                            .playerName(playerNames.get(i))
+                            .answerText(raw.isEmpty() ? null : raw)
+                            .build());
+        }
     }
 
     public List<SessionAnswer> getAnswersForSession(Long sessionId) {
