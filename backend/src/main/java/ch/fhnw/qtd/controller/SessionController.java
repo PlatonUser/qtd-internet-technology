@@ -7,6 +7,7 @@ import ch.fhnw.qtd.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -29,9 +30,11 @@ public class SessionController {
     }
 
     @PostMapping
+    @SuppressWarnings("unchecked")
     public Session createSession(@RequestBody Map<String, Object> payload) {
         Long categoryId = ((Number) payload.get("categoryId")).longValue();
-        return sessionService.createSession(categoryId);
+        List<String> players = (List<String>) payload.getOrDefault("players", Collections.emptyList());
+        return sessionService.createSession(categoryId, players);
     }
 
     @PutMapping("/{id}/complete")

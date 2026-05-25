@@ -3,6 +3,7 @@ package ch.fhnw.qtd.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,20 @@ public class Session {
 
     @Builder.Default
     private boolean completed = false;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "session_players", joinColumns = @JoinColumn(name = "session_id"))
+    @Column(name = "player_name")
+    @OrderColumn(name = "player_index")
+    @Builder.Default
+    private List<String> players = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "session_question_ids", joinColumns = @JoinColumn(name = "session_id"))
+    @Column(name = "question_id")
+    @OrderColumn(name = "question_index")
+    @Builder.Default
+    private List<Long> questionIds = new ArrayList<>();
 
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
