@@ -8,22 +8,26 @@ import java.util.List;
 
 @Service
 public class CategoryService {
-    
+
     @Autowired
     private CategoryRepository categoryRepository;
-    
+
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
-    
+
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id).orElse(null);
     }
-    
+
     public Category createCategory(Category category) {
         return categoryRepository.save(category);
     }
-    
+
+    public Category save(Category category) {
+        return categoryRepository.save(category);
+    }
+
     public Category updateCategory(Long id, Category categoryDetails) {
         Category category = categoryRepository.findById(id).orElse(null);
         if (category != null) {
@@ -40,7 +44,7 @@ public class CategoryService {
         }
         return null;
     }
-    
+
     public void deleteCategory(Long id) {
         categoryRepository.deleteById(id);
     }
