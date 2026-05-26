@@ -1,1 +1,36 @@
-<!-- TODO SP -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!-- ===== HEAD FRAGMENT ===== -->
+<head th:fragment="head(title)">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title th:text="${title} + ' &middot; QTD'">QTD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=<link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<!-- ===== PUBLIC NAVBAR ===== -->
+<nav th:fragment="navbar" class="navbar">
+<a th:href="@{/}" class="brand">
+<span class="brand-icon">&#128172;</span>
+<span class="brand-text">Questions to Discuss</span>
+</a>
+<div class="nav-actions">
+<a th:href="@{/admin/login}" class="btn btn-ghost">Admin Panel</a>
+<a th:href="@{/} + '#categories'" class="btn btn-primary">Start Session</a>
+</div>
+</nav>
+<!-- ===== ADMIN NAVBAR ===== -->
+<nav th:fragment="adminNavbar" class="navbar">
+<a th:href="@{/}" class="brand">
+<span class="brand-icon">&#128172;</span>
+<span class="brand-text">Questions to Discuss</span>
+</a>
+<div class="nav-actions">
+<span class="admin-pill">&#9989; Admin</span>
+<form th:action="@{/admin/logout}" method="post" style="display:inline">
+<button type="submit" class="btn btn-ghost">Logout</button>
+</form>
+</div>
+</nav>
+</html>
