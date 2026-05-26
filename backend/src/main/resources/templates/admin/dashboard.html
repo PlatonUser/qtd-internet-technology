@@ -1,1 +1,99 @@
-<!-- TODO SP -->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Dashboard')}"></head>
+<body>
+
+<nav th:replace="~{fragments/layout :: adminNavbar}"></nav>
+
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">OVERVIEW</h6>
+            <a th:href="@{/admin/dashboard}" class="sidebar-link"
+               th:classappend="${activeNav == 'dashboard'} ? 'active'">
+                <span class="sidebar-icon">&#128193;</span>
+                <span>Dashboard</span>
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">CONTENT</h6>
+            <a th:href="@{/admin/categories}" class="sidebar-link"
+               th:classappend="${activeNav == 'categories'} ? 'active'">
+                <span class="sidebar-icon">&#128193;</span>
+                <span>Categories</span>
+            </a>
+            <a th:href="@{/admin/questions}" class="sidebar-link"
+               th:classappend="${activeNav == 'questions'} ? 'active'">
+                <span class="sidebar-icon">&#10067;</span>
+                <span>Questions</span>
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">DATA</h6>
+            <a th:href="@{/admin/sessions}" class="sidebar-link"
+               th:classappend="${activeNav == 'sessions'} ? 'active'">
+                <span class="sidebar-icon">&#128203;</span>
+                <span>Sessions</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1>Dashboard</h1>
+            <p class="admin-subtitle">QTD application overview</p>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon-large">&#128193;</div>
+                <div class="stat-label">CATEGORIES</div>
+                <div class="stat-value" th:text="${categoryCount}">4</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-large">&#10067;</div>
+                <div class="stat-label">QUESTIONS</div>
+                <div class="stat-value" th:text="${questionCount}">20</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-large">&#128203;</div>
+                <div class="stat-label">SESSIONS</div>
+                <div class="stat-value" th:text="${sessionCount}">2</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-large">&#9999;&#65039;</div>
+                <div class="stat-label">ANSWERS</div>
+                <div class="stat-value" th:text="${answerCount}">4</div>
+            </div>
+        </section>
+
+        <section class="breakdown-card">
+            <h2 class="breakdown-title">Category Breakdown</h2>
+            <table class="breakdown-table">
+                <thead>
+                    <tr>
+                        <th>CATEGORY</th>
+                        <th>ACTIVE QUESTIONS</th>
+                        <th>SESSIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="row : ${breakdown}">
+                        <td>
+                            <span class="category-pill"
+                                  th:classappend="|cat-${row.category.slug}|">
+                                <span th:text="${row.category.icon}">&#128101;</span>
+                                <span th:text="${row.category.name}">Friends</span>
+                            </span>
+                        </td>
+                        <td class="num-cell" th:text="${row.activeQuestions}">5</td>
+                        <td class="num-cell" th:text="${row.sessions}">0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>
