@@ -2,21 +2,26 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/layout :: head('Home')}"></head>
 <body>
+
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
 <main class="page">
-<section class="hero">
-<h1>Start Meaningful Conversations</h1>
-<p class="hero-subtitle">Engage in thought-provoking questions across different themes</</section>
-<section id="categories" class="categories-grid">
-<article th:each="cat : ${categories}" class="category-card">
-<div class="card-icon" th:text="${cat.icon}">&#128172;</div>
-<h3 class="card-title" th:text="${cat.name}">Category Name</h3>
-<p class="card-description" th:text="${cat.description}">Description</p>
-<a th:href="@{/session/setup(categoryId=${cat.id})}" class="btn btn-primary card-cta">
-Start Session <span>+</span>
-</a>
-</article>
-</section>
+    <section class="hero">
+        <h1>Start Meaningful Conversations</h1>
+        <p class="hero-subtitle">Engage in thought-provoking questions across different themes</p>
+    </section>
+
+    <section id="categories" class="categories-grid">
+        <article th:each="cat : ${categories}" class="category-card">
+            <div class="card-icon" th:text="${cat.icon}">&#128172;</div>
+            <h3 class="card-title" th:text="${cat.name}">Category Name</h3>
+            <p class="card-description" th:text="${cat.description}">Description</p>
+            <a th:href="@{/session/setup(categoryId=${cat.id})}" class="btn btn-primary card-cta">
+                Start Session <span>+</span>
+            </a>
+        </article>
+    </section>
 </main>
+
 </body>
 </html>

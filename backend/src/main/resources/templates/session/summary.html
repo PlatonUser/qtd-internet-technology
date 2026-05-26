@@ -2,74 +2,83 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/layout :: head('Summary')}"></head>
 <body>
+
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
 <main class="page page-narrow">
-<section class="summary-header">
-<h1>Session complete</h1>
-<p class="summary-subtitle">
-<span th:text="${qtdSession.category.name}">Friends</span> Session
-&bull;
-<span th:text="${startedAtFormatted}">8 Apr 2026</span>
-</p>
-</section>
-<section class="summary-stats">
-<div class="stat-pill">
-<span class="stat-icon">&#10067;</span>
-<span th:text="|${questionCount} questions|">5 questions</span>
-</div>
-<div class="stat-pill">
-<span class="stat-icon">&#128101;</span>
-<span th:text="|${playerCount} players|">2 players</span>
-</div>
-<div class="stat-pill">
-<span class="stat-icon">&#9999;&#65039;</span>
-<span th:text="|${answerCount} answers|">0 answers</span>
-</div>
-</section>
-<section class="player-tabs">
-<button th:each="player, iter : ${players}"
-type="button"
-class="player-tab"
-th:classappend="${iter.index == 0} ? 'active'"
-th:attr="data-tab=${iter.index}"
-th:text="${player}">Player 1</button>
-</section>
-<section class="summary-content">
-<div th:each="player, pIter : ${players}"
-class="player-panel"
-th:classappend="${pIter.index == 0} ? 'active'"
-th:attr="data-panel=${pIter.index}">
-<div th:each="question, qIter : ${questions}" class="summary-question-card">
-<span class="question-label"
-th:text="|QUESTIONS ${qIter.index + 1}|">QUESTIONS 1</span>
-<h3 class="summary-question-text" th:text="${question.text}">Question</h3>
-<div th:with="answer=${playerAnswerList.get(player).get(qIter.index)}"
-class="summary-answer"
-th:classappend="${#strings.isEmpty(answer)} ? 'empty'"
-th:text="${#strings.isEmpty(answer)} ? 'No answer given' : ${answer}">Answer</</div>
-</div>
-</section>
-<div class="summary-actions">
-<a th:href="@{/}" class="btn btn-primary">&larr; Back to Home</a>
-<a th:href="@{/session/setup(categoryId=${qtdSession.category.id})}"
-class="btn btn-ghost">Play Again</a>
-</div>
+    <section class="summary-header">
+        <h1>Session complete</h1>
+        <p class="summary-subtitle">
+            <span th:text="${qtdSession.category.name}">Friends</span> Session
+            &bull;
+            <span th:text="${startedAtFormatted}">8 Apr 2026</span>
+        </p>
+    </section>
+
+    <section class="summary-stats">
+        <div class="stat-pill">
+            <span class="stat-icon">&#10067;</span>
+            <span th:text="|${questionCount} questions|">5 questions</span>
+        </div>
+        <div class="stat-pill">
+            <span class="stat-icon">&#128101;</span>
+            <span th:text="|${playerCount} players|">2 players</span>
+        </div>
+        <div class="stat-pill">
+            <span class="stat-icon">&#9999;&#65039;</span>
+            <span th:text="|${answerCount} answers|">0 answers</span>
+        </div>
+    </section>
+
+    <section class="player-tabs">
+        <button th:each="player, iter : ${players}"
+                type="button"
+                class="player-tab"
+                th:classappend="${iter.index == 0} ? 'active'"
+                th:attr="data-tab=${iter.index}"
+                th:text="${player}">Player 1</button>
+    </section>
+
+    <section class="summary-content">
+        <div th:each="player, pIter : ${players}"
+             class="player-panel"
+             th:classappend="${pIter.index == 0} ? 'active'"
+             th:attr="data-panel=${pIter.index}">
+            <div th:each="question, qIter : ${questions}" class="summary-question-card">
+                <span class="question-label"
+                      th:text="|QUESTIONS ${qIter.index + 1}|">QUESTIONS 1</span>
+                <h3 class="summary-question-text" th:text="${question.text}">Question</h3>
+                <div th:with="answer=${playerAnswerList.get(player).get(qIter.index)}"
+                     class="summary-answer"
+                     th:classappend="${#strings.isEmpty(answer)} ? 'empty'"
+                     th:text="${#strings.isEmpty(answer)} ? 'No answer given' : ${answer}">Answer</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="summary-actions">
+        <a th:href="@{/}" class="btn btn-primary">&larr; Back to Home</a>
+        <a th:href="@{/session/setup(categoryId=${qtdSession.category.id})}"
+           class="btn btn-ghost">Play Again</a>
+    </div>
 </main>
+
 <script>
 (function () {
-const tabs = document.querySelectorAll('.player-tab');
-const panels = document.querySelectorAll('.player-panel');
-tabs.forEach(tab => {
-tab.addEventListener('click', () => {
-const idx = tab.getAttribute('data-tab');
-tabs.forEach(t => t.classList.remove('active'));
-panels.forEach(p => p.classList.remove('active'));
-tab.classList.add('active');
-const target = document.querySelector('.player-panel[data-panel="' + idx + '"]');
-if (target) target.classList.add('active');
-});
-});
+    const tabs   = document.querySelectorAll('.player-tab');
+    const panels = document.querySelectorAll('.player-panel');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const idx = tab.getAttribute('data-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            const target = document.querySelector('.player-panel[data-panel="' + idx + '"]');
+            if (target) target.classList.add('active');
+        });
+    });
 })();
 </script>
+
 </body>
 </html>

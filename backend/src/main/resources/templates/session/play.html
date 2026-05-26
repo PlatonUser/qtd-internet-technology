@@ -2,38 +2,45 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/layout :: head('Play')}"></head>
 <body>
+
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
 <main class="page page-narrow">
-<section class="play-header">
-<h1 th:text="|${qtdSession.category.name} Session|">Friends Session</h1>
-<p class="play-subtitle"
-th:text="|Question ${qIndex} of ${total}|">Question 1 of 5</p>
-</section>
-<form th:action="@{/session/{id}/play(id=${qtdSession.id}, q=${qIndex})}" method="post">
-<input type="hidden" name="questionId" th:value="${question.id}" />
-<section class="question-card">
-<span class="question-label" th:text="|QUESTION ${qIndex}|">QUESTION 1</span>
-<h2 class="question-text" th:text="${question.text}">Question text here</h2>
-</section>
-<div class="answer-cards">
-<div th:each="player, iter : ${players}" class="answer-card">
-<div class="answer-header">
-<span class="player-avatar"
-th:classappend="|player-color-${iter.index % 6}|">P</span>
-<span class="player-name" th:text="${player}">Player 1</span>
-</div>
-<textarea name="answers"
-class="answer-input"
-rows="3"
-th:placeholder="|${player}'s answer (optional)...|"></textarea>
-</div>
-</div>
-<div class="play-actions">
-<button type="submit" class="btn btn-primary"
-th:text="${isLast} ? 'Finish' : 'Next &rarr;'">Next &rarr;</button>
-<a th:href="@{/}" class="btn btn-ghost">&larr; Home</a>
-</div>
-</form>
+    <section class="play-header">
+        <h1 th:text="|${qtdSession.category.name} Session|">Friends Session</h1>
+        <p class="play-subtitle"
+           th:text="|Question ${qIndex} of ${total}|">Question 1 of 5</p>
+    </section>
+
+    <form th:action="@{/session/{id}/play(id=${qtdSession.id}, q=${qIndex})}" method="post">
+        <input type="hidden" name="questionId" th:value="${question.id}" />
+
+        <section class="question-card">
+            <span class="question-label" th:text="|QUESTION ${qIndex}|">QUESTION 1</span>
+            <h2 class="question-text" th:text="${question.text}">Question text here</h2>
+        </section>
+
+        <div class="answer-cards">
+            <div th:each="player, iter : ${players}" class="answer-card">
+                <div class="answer-header">
+                    <span class="player-avatar"
+                          th:classappend="|player-color-${iter.index % 6}|">P</span>
+                    <span class="player-name" th:text="${player}">Player 1</span>
+                </div>
+                <textarea name="answers"
+                          class="answer-input"
+                          rows="3"
+                          th:placeholder="|${player}'s answer (optional)...|"></textarea>
+            </div>
+        </div>
+
+        <div class="play-actions">
+            <button type="submit" class="btn btn-primary"
+                    th:text="${isLast} ? 'Finish' : 'Next &rarr;'">Next &rarr;</button>
+            <a th:href="@{/}" class="btn btn-ghost">&larr; Home</a>
+        </div>
+    </form>
 </main>
+
 </body>
 </html>
