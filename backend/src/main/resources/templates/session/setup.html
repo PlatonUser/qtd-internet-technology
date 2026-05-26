@@ -57,7 +57,9 @@ const i = list.querySelectorAll('.player-row').length;
 const row = document.createElement('div');
 row.className = 'player-row';
 row.innerHTML =
-'<span class="player-avatar" style="background:' + colors[i % colors.length] + '">P</'<input type="text" name="players" placeholder="Player ' + (i + 1) + '" class="player-'<button type="button" class="player-remove" aria-label="Remove">&times;</button>';
+  '<span class="player-avatar" style="background:' + colors[i % colors.length] + '">P</span>' +
+  '<input type="text" name="players" placeholder="Player ' + (i + 1) + '" class="player-input" />' +
+  '<button type="button" class="player-remove" aria-label="Remove">&times;</button>';
 list.appendChild(row);
 });
 form.addEventListener('submit', (e) => {
