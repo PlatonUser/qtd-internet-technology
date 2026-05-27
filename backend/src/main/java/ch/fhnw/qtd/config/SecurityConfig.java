@@ -2,6 +2,7 @@ package ch.fhnw.qtd.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -20,12 +21,23 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Order(1)
+    public SecurityFilterChain apiSecurityChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/api/**")
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(authz -> authz.anyRequest().hasRole("ADMIN"))
+            .httpBasic(basic -> {});
+        return http.build();
+    }
+
+    @Bean
+    @Order(2)
+    public SecurityFilterChain webSecurityChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/api/**", "/h2-console/**")
-            )
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
                     "/",
@@ -35,7 +47,6 @@ public class SecurityConfig {
                     "/images/**",
                     "/favicon.ico",
                     "/webjars/**",
-                    "/api/**",
                     "/h2-console/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
@@ -60,7 +71,6 @@ public class SecurityConfig {
             .headers(headers -> headers
                 .frameOptions(frameOptions -> frameOptions.disable())
             );
-
         return http.build();
     }
 
