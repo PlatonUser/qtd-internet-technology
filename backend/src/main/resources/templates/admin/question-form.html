@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Question Form')}"></head>
+<body>
+
+<nav th:replace="~{fragments/layout :: adminNavbar}"></nav>
+
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">OVERVIEW</h6>
+            <a th:href="@{/admin/dashboard}" class="sidebar-link">
+                <span class="sidebar-icon">&#128193;</span><span>Dashboard</span>
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">CONTENT</h6>
+            <a th:href="@{/admin/categories}" class="sidebar-link">
+                <span class="sidebar-icon">&#128193;</span><span>Categories</span>
+            </a>
+            <a th:href="@{/admin/questions}" class="sidebar-link active">
+                <span class="sidebar-icon">&#10067;</span><span>Questions</span>
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">DATA</h6>
+            <a th:href="@{/admin/sessions}" class="sidebar-link">
+                <span class="sidebar-icon">&#128203;</span><span>Sessions</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1 th:text="${formTitle}">Add Question</h1>
+        </header>
+
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <form th:action="@{${formAction}}" method="post" class="admin-form">
+            <div class="form-row">
+                <label class="form-label">Question text
+                    <span class="form-hint">(at least 10 characters)</span>
+                </label>
+                <textarea name="text" rows="3" required class="form-input"
+                          th:text="${question.text}"></textarea>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label">Category</label>
+                <select name="categoryId" required class="form-input">
+                    <option value="" disabled th:selected="${question.category == null}">Choose a category...</option>
+                    <option th:each="cat : ${categories}"
+                            th:value="${cat.id}"
+                            th:selected="${question.category != null and question.category.id == cat.id}"
+                            th:text="|${cat.icon} ${cat.name}|">Friends</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label class="form-check">
+                    <input type="checkbox" name="active" value="true"
+                           th:checked="${question.id == null or question.active}"/>
+                    <span>Active</span>
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" th:text="${submitLabel}">Save</button>
+                <a th:href="@{/admin/questions}" class="btn btn-ghost">Cancel</a>
+            </div>
+        </form>
+    </main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Categories')}"></head>
+<body>
+
+<nav th:replace="~{fragments/layout :: adminNavbar}"></nav>
+
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">OVERVIEW</h6>
+            <a th:href="@{/admin/dashboard}" class="sidebar-link"
+               th:classappend="${activeNav == 'dashboard'} ? 'active'">
+                <span class="sidebar-icon">&#128193;</span><span>Dashboard</span>
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">CONTENT</h6>
+            <a th:href="@{/admin/categories}" class="sidebar-link"
+               th:classappend="${activeNav == 'categories'} ? 'active'">
+                <span class="sidebar-icon">&#128193;</span><span>Categories</span>
+            </a>
+            <a th:href="@{/admin/questions}" class="sidebar-link"
+               th:classappend="${activeNav == 'questions'} ? 'active'">
+                <span class="sidebar-icon">&#10067;</span><span>Questions</span>
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">DATA</h6>
+            <a th:href="@{/admin/sessions}" class="sidebar-link"
+               th:classappend="${activeNav == 'sessions'} ? 'active'">
+                <span class="sidebar-icon">&#128203;</span><span>Sessions</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1>Categories</h1>
+            <p class="admin-subtitle">Manage question categories</p>
+        </header>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <section class="admin-table-card">
+            <div class="admin-table-header">
+                <h2 th:text="|All Categories(${rows.size()})|">All Categories(4)</h2>
+                <a th:href="@{/admin/categories/new}" class="btn btn-primary">+ Add Category</a>
+            </div>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ICON</th>
+                        <th>NAME</th>
+                        <th>DESCRIPTION</th>
+                        <th>STATUS</th>
+                        <th>QUESTIONS</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="row : ${rows}">
+                        <td class="icon-cell" th:text="${row.category.icon}">&#128172;</td>
+                        <td>
+                            <span class="category-pill"
+                                  th:classappend="|cat-${row.category.slug}|"
+                                  th:text="${row.category.name}">Friends</span>
+                        </td>
+                        <td class="desc-cell" th:text="${row.category.description}">Description</td>
+                        <td>
+                            <span class="status-pill"
+                                  th:classappend="${row.category.active} ? 'status-active' : 'status-inactive'"
+                                  th:text="${row.category.active} ? 'Active' : 'Inactive'">Active</span>
+                        </td>
+                        <td class="num-cell" th:text="${row.activeQuestions}">5</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a th:href="@{/admin/categories/{id}/edit(id=${row.category.id})}"
+                                   class="btn btn-ghost btn-sm">Edit</a>
+                                <form th:action="@{/admin/categories/{id}/delete(id=${row.category.id})}"
+                                      method="post" style="display:inline"
+                                      onsubmit="return confirm('Delete this category?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

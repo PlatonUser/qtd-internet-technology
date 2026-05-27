@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Category Form')}"></head>
+<body>
+
+<nav th:replace="~{fragments/layout :: adminNavbar}"></nav>
+
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">OVERVIEW</h6>
+            <a th:href="@{/admin/dashboard}" class="sidebar-link">
+                <span class="sidebar-icon">&#128193;</span><span>Dashboard</span>
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">CONTENT</h6>
+            <a th:href="@{/admin/categories}" class="sidebar-link active">
+                <span class="sidebar-icon">&#128193;</span><span>Categories</span>
+            </a>
+            <a th:href="@{/admin/questions}" class="sidebar-link">
+                <span class="sidebar-icon">&#10067;</span><span>Questions</span>
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">DATA</h6>
+            <a th:href="@{/admin/sessions}" class="sidebar-link">
+                <span class="sidebar-icon">&#128203;</span><span>Sessions</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1 th:text="${formTitle}">Add Category</h1>
+        </header>
+
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <form th:action="@{${formAction}}" method="post" class="admin-form">
+            <div class="form-row">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" required
+                       th:value="${category.name}" class="form-input"/>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label">Slug <span class="form-hint">(auto-generated from name if empty)</span></label>
+                <input type="text" name="slug"
+                       th:value="${category.slug}" class="form-input"/>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label">Description</label>
+                <textarea name="description" rows="2" class="form-input"
+                          th:text="${category.description}"></textarea>
+            </div>
+
+            <div class="form-row form-row-split">
+                <div>
+                    <label class="form-label">Icon (emoji)</label>
+                    <input type="text" name="icon"
+                           th:value="${category.icon}" class="form-input"/>
+                </div>
+                <div>
+                    <label class="form-label">Color tag</label>
+                    <select name="color" class="form-input">
+                        <option value="general"    th:selected="${category.color == 'general'}">General</option>
+                        <option value="friends"    th:selected="${category.color == 'friends'}">Friends</option>
+                        <option value="dating"     th:selected="${category.color == 'dating'}">Dating</option>
+                        <option value="deep-talk"  th:selected="${category.color == 'deep-talk'}">Deep Talk</option>
+                        <option value="fun-topics" th:selected="${category.color == 'fun-topics'}">Fun Topics</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label class="form-check">
+                    <input type="checkbox" name="active" value="true"
+                           th:checked="${category.active}"/>
+                    <span>Active</span>
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" th:text="${submitLabel}">Save</button>
+                <a th:href="@{/admin/categories}" class="btn btn-ghost">Cancel</a>
+            </div>
+        </form>
+    </main>
+</div>
+
+</body>
+</html>

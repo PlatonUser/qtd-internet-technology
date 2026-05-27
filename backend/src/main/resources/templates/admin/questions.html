@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Questions')}"></head>
+<body>
+
+<nav th:replace="~{fragments/layout :: adminNavbar}"></nav>
+
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">OVERVIEW</h6>
+            <a th:href="@{/admin/dashboard}" class="sidebar-link"
+               th:classappend="${activeNav == 'dashboard'} ? 'active'">
+                <span class="sidebar-icon">&#128193;</span><span>Dashboard</span>
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">CONTENT</h6>
+            <a th:href="@{/admin/categories}" class="sidebar-link"
+               th:classappend="${activeNav == 'categories'} ? 'active'">
+                <span class="sidebar-icon">&#128193;</span><span>Categories</span>
+            </a>
+            <a th:href="@{/admin/questions}" class="sidebar-link"
+               th:classappend="${activeNav == 'questions'} ? 'active'">
+                <span class="sidebar-icon">&#10067;</span><span>Questions</span>
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">DATA</h6>
+            <a th:href="@{/admin/sessions}" class="sidebar-link"
+               th:classappend="${activeNav == 'sessions'} ? 'active'">
+                <span class="sidebar-icon">&#128203;</span><span>Sessions</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1>Questions</h1>
+            <p class="admin-subtitle">Manage conversation questions</p>
+        </header>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <section class="admin-table-card">
+            <div class="admin-table-header">
+                <h2 th:text="|All Questions(${questions.size()})|">All Questions(20)</h2>
+                <a th:href="@{/admin/questions/new}" class="btn btn-primary">+ Add Question</a>
+            </div>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>NUMBER</th>
+                        <th>QUESTION</th>
+                        <th>CATEGORY</th>
+                        <th>STATUS</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="q, iter : ${questions}">
+                        <td class="num-cell" th:text="${iter.index + 1}">1</td>
+                        <td class="question-cell" th:text="${q.text}">Question text...</td>
+                        <td>
+                            <span class="category-pill"
+                                  th:classappend="|cat-${q.category.slug}|"
+                                  th:text="${q.category.name}">Friends</span>
+                        </td>
+                        <td>
+                            <span class="status-pill"
+                                  th:classappend="${q.active} ? 'status-active' : 'status-inactive'"
+                                  th:text="${q.active} ? 'Active' : 'Inactive'">Active</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a th:href="@{/admin/questions/{id}/edit(id=${q.id})}"
+                                   class="btn btn-ghost btn-sm">Edit</a>
+                                <form th:action="@{/admin/questions/{id}/delete(id=${q.id})}"
+                                      method="post" style="display:inline"
+                                      onsubmit="return confirm('Delete this question?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>
