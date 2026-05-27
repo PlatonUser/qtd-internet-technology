@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Sessions')}"></head>
+<body>
+
+<nav th:replace="~{fragments/layout :: adminNavbar}"></nav>
+
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">OVERVIEW</h6>
+            <a th:href="@{/admin/dashboard}" class="sidebar-link"
+               th:classappend="${activeNav == 'dashboard'} ? 'active'">
+                <span class="sidebar-icon">&#128193;</span><span>Dashboard</span>
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">CONTENT</h6>
+            <a th:href="@{/admin/categories}" class="sidebar-link"
+               th:classappend="${activeNav == 'categories'} ? 'active'">
+                <span class="sidebar-icon">&#128193;</span><span>Categories</span>
+            </a>
+            <a th:href="@{/admin/questions}" class="sidebar-link"
+               th:classappend="${activeNav == 'questions'} ? 'active'">
+                <span class="sidebar-icon">&#10067;</span><span>Questions</span>
+            </a>
+        </div>
+        <div class="sidebar-section">
+            <h6 class="sidebar-label">DATA</h6>
+            <a th:href="@{/admin/sessions}" class="sidebar-link"
+               th:classappend="${activeNav == 'sessions'} ? 'active'">
+                <span class="sidebar-icon">&#128203;</span><span>Sessions</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1>Sessions</h1>
+            <p class="admin-subtitle">View all user sessions</p>
+        </header>
+
+        <section class="admin-table-card">
+            <div class="admin-table-header">
+                <h2 th:text="|All Sessions(${rows.size()})|">All Sessions(4)</h2>
+            </div>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>CATEGORY</th>
+                        <th>DATE</th>
+                        <th>QUESTIONS</th>
+                        <th>ANSWERS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="row : ${rows}">
+                        <td class="num-cell" th:text="|#${row.session.id}|">#101</td>
+                        <td>
+                            <span class="category-pill"
+                                  th:classappend="|cat-${row.session.category.slug}|"
+                                  th:text="|${row.session.category.icon} ${row.session.category.name}|">
+                                Friends
+                            </span>
+                        </td>
+                        <td th:text="${row.date}">8 Apr 2026</td>
+                        <td class="num-cell" th:text="${row.questionCount}">5</td>
+                        <td class="num-cell" th:text="${row.answerCount}">5</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>
