@@ -665,7 +665,7 @@ The repository contains a `.devcontainer/devcontainer.json` pre-configured with 
    cd backend
    ./mvnw spring-boot:run
    ```
-4. Once Spring Boot has started, port **`8080`** is auto-forwarded by Codespaces. Open the **Ports** tab and click the globe icon on port `8080` — Codespaces will open the app at a URL like:
+4. Once Spring Boot has started, port **`8080`** is auto-forwarded by Codespaces. Open the **Ports** tab and make it **Public**, after click the globe icon on port `8080` — Codespaces will open the app at a URL like:
    ```
    https://<codespace-name>-8080.app.github.dev/
    https://<codespace-name>-8080.app.github.dev/swagger-ui.html
