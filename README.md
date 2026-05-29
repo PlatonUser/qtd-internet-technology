@@ -371,6 +371,7 @@ All REST endpoints are documented via **OpenAPI 3.0 / Swagger UI**. The OpenAPI 
 | `GET` | `/api/sessions/{id}/questions?limit=5` | Get the questions selected for a session |
 | `POST` | `/api/sessions/{id}/answers` | Add an answer — body `{ "questionId", "playerName", "answerText" }` |
 | `GET` | `/api/sessions/{id}/answers` | List all answers for a session |
+| GET | /api/sessions/{id}/answer-count | 
 
 ### Response codes
 
@@ -518,7 +519,7 @@ src/test/java/ch/fhnw/qtd/
 
 | Principle / Pattern | Where applied |
 |---------------------|---------------|
-| **Layered architecture** | Strict Controller → Service → Repository separation; controllers never call repositories directly |
+| **Layered architecture** | Controllers delegate writes and business logic to the service layer; a few simple read-only count queries are taken straight from the repository in the admin list views |
 | **MVC pattern** | Thymeleaf controllers return view names + populate `Model`; data flows are explicit |
 | **Repository pattern** | All persistence goes through Spring Data JPA interfaces |
 | **DTO-light approach** | Entities are exposed via REST; `@JsonIgnore` hides back-references to avoid recursion (e.g. `Category.questions`, `Session.answers`) |
