@@ -10,8 +10,8 @@
 | Name | Main Contribution |
 |------|-------------------|
 | **Danila Anfilofyev** | Backend development, JPA domain model, service layer, security configuration, deployment |
-| **Platon Pashkevych** | REST API design, controllers, OpenAPI documentation, frontend–backend integration, |
-| **Snizhana Pashkevych** | Frontend (Thymeleaf templates), UX design, responsive layout, CSS design system, testing|
+| **Platon Pashkevych** | REST API design, controllers, OpenAPI documentation, frontend–backend integration |
+| **Snizhana Pashkevych** | Frontend (Thymeleaf templates), UX design, responsive layout, CSS design system, testing |
 
 ---
 
@@ -20,8 +20,10 @@
 | Resource | URL |
 |----------|-----|
 | 🎥 **Video Presentation** | *(add YouTube / SWITCHtube / Microsoft Stream link before submission)* |
-| 📄 **OpenAPI / Swagger Documentation** | `https://<codespace-url>/swagger-ui.html` (or `http://localhost:8080/swagger-ui.html` locally) |
+| 📄 **OpenAPI / Swagger Documentation** | `/swagger-ui.html` — available at `http://localhost:8080/swagger-ui.html` when running locally, or at the forwarded Codespaces URL after starting the app (see [§7.2](#72-running-on-github-codespaces)) |
 | 💻 **GitHub Repository** | https://github.com/PlatonUser/qtd-internet-technology.git |
+
+> **No public deployment is provided** — per the assessment (§2.4), *"Deployment on a web server is not expected. But published web application and web services configured and running on GitHub Codespaces are required."* The repository is fully configured for one-click instantiation on GitHub Codespaces: see [§7.2 Running on GitHub Codespaces](#72-running-on-github-codespaces) for the exact steps.
 
 ---
 
@@ -48,6 +50,7 @@
   - [5.2 Backend Technology Stack](#52-backend-technology-stack)
   - [5.3 Package Structure](#53-package-structure)
   - [5.4 Design Patterns & Principles](#54-design-patterns--principles)
+  - [5.5 Testing](#55-testing)
 - [6. Security](#6-security)
 - [7. Demonstrator — Installation & Running](#7-demonstrator--installation--running)
   - [7.1 Running Locally](#71-running-locally)
@@ -108,7 +111,7 @@ The seven generic user stories from the assessment are mapped 1-to-1 onto the im
 | 2. Admin — Consistent visual appearance | Shared CSS design system (`/css/app.css`) + Thymeleaf layout fragments (`fragments/layout.html`) used across every admin page |
 | 3. Admin — List views for business data | `/admin/categories`, `/admin/questions`, `/admin/sessions`, `/admin/dashboard` |
 | 4. Admin — Edit and create views | `/admin/categories/new`, `/admin/categories/{id}/edit`, `/admin/questions/new`, `/admin/questions/{id}/edit` |
-| 5. Admin — Log-in to authenticate | `/admin/login` (Spring Security form login + BCrypt-hashed admin user) |
+| 5. Admin — Log-in to authenticate | `/admin/login` (Spring Security form login + BCrypt-hashed admin credentials) |
 | 6. User — List views for public pages | Home page (`/`) shows category list; session play (`/session/{id}/play`) and summary (`/session/{id}/summary`) are public list/detail views |
 | 7. *(Optional)* User — Authenticate to access confidential data | Implemented for the admin actor; public users intentionally remain anonymous for low-friction session start |
 
@@ -133,17 +136,17 @@ The seven generic user stories from the assessment are mapped 1-to-1 onto the im
 
 ## 2.1 Domain Model
 
-The QTD domain model is built around **five JPA entities** that capture the lifecycle of a question session — from content management (categories & questions) to play-time (session, players, answers) and administrator identity.
+The QTD domain model is built around **four JPA entities** that capture the lifecycle of a question session — from content management (categories & questions) to play-time (session, players, answers).
 
 ```
-┌─────────────┐       ┌──────────────┐ 1     * ┌──────────────────┐
-│   AppUser   │       │   Category   ├─────────►│     Question     │
-│─────────────│       │──────────────│         │──────────────────│
-│ id          │       │ id           │         │ id               │
-│ username    │       │ name         │         │ text  (min 10)   │
-│ password    │       │ slug  (uniq) │         │ category (FK)    │
-│ role        │       │ description  │         │ active           │
-└─────────────┘       │ icon  (emoji)│         └──────────────────┘
+                      ┌──────────────┐ 1     * ┌──────────────────┐
+                      │   Category   ├─────────►│     Question     │
+                      │──────────────│         │──────────────────│
+                      │ id           │         │ id               │
+                      │ name         │         │ text  (min 10)   │
+                      │ slug  (uniq) │         │ category (FK)    │
+                      │ description  │         │ active           │
+                      │ icon  (emoji)│         └──────────────────┘
                       │ color        │                  ▲
                       │ active       │                  │
                       └──────┬───────┘                  │
@@ -175,13 +178,14 @@ The QTD domain model is built around **five JPA entities** that capture the life
 
 > The session keeps its picked `questionIds` and `players` denormalised so that re-runs of the player flow are reproducible even if an admin later edits questions or categories.
 
+> **Authentication note:** the admin user is provisioned in memory at startup via Spring Security's `InMemoryUserDetailsManager` (see [§6 Security](#6-security)). Because the app currently needs only one administrator account, no `AppUser` entity or `users` table is kept in the schema — this keeps the domain model focused on the business concepts (categories, questions, sessions, answers).
+
 ## 2.2 Database Schema
 
 The application uses an **H2 in-memory relational database** (`jdbc:h2:mem:qtddb`), recreated on every startup (`ddl-auto=create-drop`) and seeded via `src/main/resources/data.sql`.
 
 | Table | Purpose |
 |-------|---------|
-| `app_user` | Administrator records (extensible; demo uses an in-memory admin from `SecurityConfig`) |
 | `category` | Discussion topic categories |
 | `question` | Individual questions linked to a category |
 | `session` | A play-through within a category |
@@ -231,15 +235,6 @@ The application uses an **H2 in-memory relational database** (`jdbc:h2:mem:qtddb
 | player_name | VARCHAR | nullable |
 | answer_text | VARCHAR(1000) | nullable |
 
-**`app_user`**
-
-| Column | Type | Constraints |
-|--------|------|-------------|
-| id | BIGINT | PK, auto-generated |
-| username | VARCHAR | NOT NULL, UNIQUE, `@NotBlank` |
-| password | VARCHAR | NOT NULL, `@NotBlank` |
-| role | VARCHAR | NOT NULL, default `ADMIN` |
-
 ## 2.3 Seed Data
 
 `data.sql` populates the database on every startup with:
@@ -257,7 +252,7 @@ The application uses an **H2 in-memory relational database** (`jdbc:h2:mem:qtddb
 The frontend is implemented as a **full-code, server-rendered web application** using **Thymeleaf 3** templates served by the same Spring Boot process as the REST API.
 
 > **Justification for choosing full-code over a low-code tool (assessment §2.3):**
-> We initially prototyped screens in Budibase, but several application needs could not be expressed cleanly there: a multi-step session flow with a per-question form holding *N* dynamic inputs (one per player), a layout shared between public and admin pages via fragments, custom client-free CSS theming with CSS variables, and tight integration with Spring Security's form-login + CSRF mechanism. Implementing these in Thymeleaf gave us full control over UX details and a single deployable artefact. This choice was discussed and confirmed with the lecturer. The documentation of everything related to the work with budibase is provided to the lecturer in addition.
+> We initially prototyped screens in Budibase, but several application needs could not be expressed cleanly there: a multi-step session flow with a per-question form holding *N* dynamic inputs (one per player), a layout shared between public and admin pages via fragments, custom client-free CSS theming with CSS variables, and tight integration with Spring Security's form-login + CSRF mechanism. Implementing these in Thymeleaf gave us full control over UX details and a single deployable artefact. This choice was discussed and confirmed with the lecturer. Documentation of the earlier Budibase work is provided to the lecturer separately.
 
 The decision keeps the application as a **single deployable unit** (one Spring Boot JAR / one Codespace port), which makes the demonstrator easier to instantiate and reproducible.
 
@@ -290,7 +285,7 @@ The application implements **11 distinct views** — far above the *minimum of 4
 
 | Route | Template | Description |
 |-------|----------|-------------|
-| `GET /admin/login` | `admin/login.html` | Login form (`username`, `password`) — Spring Security form login |
+| `GET /admin/login` | `admin/login.html` | Login form (`username`, `password`) — Spring Security form login; no credential hints exposed in the UI |
 | `GET /admin/dashboard` | `admin/dashboard.html` | KPI cards (categories, questions, sessions, answers) + per-category breakdown |
 | `GET /admin/categories` | `admin/categories.html` | Categories list table with active-question counts |
 | `GET /admin/categories/new`, `…/{id}/edit` | `admin/category-form.html` | Shared create / edit form |
@@ -304,7 +299,7 @@ The application implements **11 distinct views** — far above the *minimum of 4
 
 ## 4.1 Business Rules
 
-The service layer enforces two business rules that correspond to real-world enterprise constraints (assessment §2.2: *at least one business rule*).
+The service layer enforces two business rules that correspond to real-world enterprise constraints (assessment §2.2: *at least one business rule*). Both rules are covered by unit tests in `SessionServiceTest` — see [§5.5 Testing](#55-testing).
 
 ### Rule 1 — Minimum active questions required to start a session
 
@@ -338,9 +333,9 @@ List<Long> questionIds = active.stream()
 
 ## 4.2 REST API
 
-All REST endpoints are documented via **OpenAPI 3.0 / Swagger UI** with `@Tag`, `@Operation` and `@SecurityRequirement` annotations on the controllers.
+All REST endpoints are documented via **OpenAPI 3.0 / Swagger UI**. The OpenAPI metadata lives in `ch.fhnw.qtd.config.OpenApiConfig` — an `@OpenAPIDefinition` provides the title, version and description, and a `@SecurityScheme(name = "basicAuth", type = HTTP, scheme = "basic")` declares the auth mechanism. Each REST controller is decorated with `@Tag` (group label), each endpoint method with `@Operation` (human-readable summary), and `@SecurityRequirement("basicAuth")` so Swagger UI surfaces an **Authorize** button that lets the reviewer try out endpoints directly with Basic Auth.
 
-- **Swagger UI:** `/swagger-ui.html`
+- **Swagger UI:** `/swagger-ui.html` *(grouped, sorted by HTTP method, with an Authorize button)*
 - **OpenAPI JSON:** `/api-docs`
 - **Base URL:** `http://localhost:8080`
 
@@ -432,9 +427,9 @@ The application reflects a **three-layer architecture deployed across two logica
 │  │  CategoryRepository, QuestionRepository,             │  │
 │  │  SessionRepository, SessionAnswerRepository          │  │
 │  └────────────────────────┬─────────────────────────────┘  │
-└────────────────────────────┼───────────────────────────────┘
-                             │ JDBC
-                             ▼
+└───────────────────────────┼───────────────────────────────┘
+                            │ JDBC
+                            ▼
                   ┌──────────────────────┐
                   │  H2 in-memory RDBMS  │
                   └──────────────────────┘
@@ -456,6 +451,7 @@ The application reflects a **three-layer architecture deployed across two logica
 | H2 Database | (Boot-managed) | In-memory relational DB for the demonstrator |
 | SpringDoc OpenAPI | 2.3.0 | OpenAPI 3 / Swagger UI |
 | Lombok | (Boot-managed) | `@Getter`/`@Setter`/`@Builder`/`@NoArgsConstructor`/`@AllArgsConstructor` |
+| JUnit 5 + Spring Boot Test | (Boot-managed) | Unit tests for service-layer business rules |
 | Maven Wrapper | 3.6.3 | Build (no Maven install required) |
 
 ## 5.3 Package Structure
@@ -465,11 +461,10 @@ ch.fhnw.qtd
 ├── QtdApplication.java             # @SpringBootApplication entry point
 │
 ├── config/
-│   ├── SecurityConfig.java         # Two security chains (API + Web) + BCrypt user store + CORS
-│   └── OpenApiConfig.java          # @OpenAPIDefinition + @SecurityScheme(basicAuth)
+│   ├── SecurityConfig.java         # Two security chains (API Basic Auth + Web form login) + BCrypt user store + CORS source
+│   └── OpenApiConfig.java          # @OpenAPIDefinition (title, version, description) + @SecurityScheme(basicAuth)
 │
 ├── model/                          # JPA entities (Lombok @Builder)
-│   ├── AppUser.java
 │   ├── Category.java
 │   ├── Question.java
 │   ├── Session.java
@@ -494,12 +489,12 @@ ch.fhnw.qtd
     ├── AdminCategoriesController.java      # /admin/categories  (full CRUD + redirects + flash)
     ├── AdminQuestionsController.java       # /admin/questions   (full CRUD)
     ├── AdminSessionsController.java        # /admin/sessions    (read-only list)
-    ├── CategoryController.java             # /api/categories    (REST)
-    ├── QuestionController.java             # /api/questions     (REST)
-    └── SessionController.java              # /api/sessions      (REST)
+    ├── CategoryController.java             # /api/categories    (REST, OpenAPI-annotated)
+    ├── QuestionController.java             # /api/questions     (REST, OpenAPI-annotated)
+    └── SessionController.java              # /api/sessions      (REST, OpenAPI-annotated)
 
 src/main/resources/
-├── application.properties          # H2, JPA, OpenAPI, CORS config
+├── application.properties          # H2, JPA, Spring Security, OpenAPI/Swagger config
 ├── data.sql                        # Seed data (run after schema creation)
 ├── static/css/app.css              # Design system (CSS variables, components)
 └── templates/                      # Thymeleaf views
@@ -512,6 +507,11 @@ src/main/resources/
     │   └── sessions.html
     └── session/                    # 3 player views
         ├── setup.html, play.html, summary.html
+
+src/test/java/ch/fhnw/qtd/
+├── QtdApplicationTests.java                # @SpringBootTest context-loads smoke test
+└── service/
+    └── SessionServiceTest.java             # Unit tests for the min-questions business rule
 ```
 
 ## 5.4 Design Patterns & Principles
@@ -529,17 +529,35 @@ src/main/resources/
 | **Single Responsibility** | `AdminDashboardService` is split out from `CategoryService`/`SessionService` because aggregating dashboard stats is a distinct concern |
 | **Transactional boundary** | `SessionService.saveAnswersForQuestion` is `@Transactional` — delete-then-insert is atomic |
 
+## 5.5 Testing
+
+The service layer is covered by unit tests in `src/test/java/ch/fhnw/qtd/service/SessionServiceTest.java`, running against a real Spring context with `@SpringBootTest` and rolled-back transactions (`@Transactional`):
+
+| Test | What it asserts |
+|------|------------------|
+| `cannotStartSessionWhenCategoryHasFewerThanThreeActiveQuestions` | Seeds a category with only 2 active questions, then calls `SessionService.createSession(...)` and asserts it returns `null` — confirming the `MIN_QUESTIONS_TO_START` business rule is enforced. |
+| `startsSessionWhenCategoryHasEnoughActiveQuestions` | Seeds a category with 5 active questions, calls `createSession(...)` with 2 players, and asserts the returned `Session` is non-null, contains both players, and has at least one selected question id — confirming the happy path. |
+
+Plus the default Spring Boot context-load smoke test (`QtdApplicationTests.contextLoads`) verifies the application wiring (security, JPA, data.sql seeding) is valid at startup.
+
+Run the tests with:
+
+```bash
+cd backend
+./mvnw test
+```
+
 ---
 
 # 6. Security
 
-Security is configured in `ch.fhnw.qtd.config.SecurityConfig` using **two distinct `SecurityFilterChain` beans**, evaluated in order.
+Security is configured in `ch.fhnw.qtd.config.SecurityConfig` using **two distinct `SecurityFilterChain` beans**, evaluated in order. Splitting the chains is intentional — the REST surface and the browser-facing UI have different threat models, so they get different mechanisms.
 
 ### Chain 1 — REST API (`@Order(1)`, matches `/api/**`)
 
-- **HTTP Basic Authentication** — every request to `/api/**` requires `Authorization: Basic <base64(user:pass)>` with role `ADMIN` (assessment §2.5 milestone 6).
+- **HTTP Basic Authentication** — every request to `/api/**` requires `Authorization: Basic <base64(user:pass)>` with role `ADMIN` (assessment §2.5 milestone 6). This is what the Swagger UI **Authorize** button drives.
 - **CSRF disabled** — appropriate for a stateless JSON API.
-- **CORS enabled** — `*` origin pattern, all headers and methods (suitable for the demonstrator; tighten before production).
+- **CORS enabled** — bound to the global `corsConfigurationSource` bean (`*` origin pattern, all headers and methods). Suitable for the demonstrator; tighten before production.
 
 ### Chain 2 — Web UI (`@Order(2)`, default)
 
@@ -547,12 +565,13 @@ Security is configured in `ch.fhnw.qtd.config.SecurityConfig` using **two distin
 - **Admin paths:** `/admin/**` requires role `ADMIN`
 - **Form login** at `/admin/login` → on success redirects to `/admin/dashboard`; on failure to `/admin/login?error=true`
 - **Logout** via POST to `/admin/logout` → redirects to `/`
-- **CSRF enabled** for browser forms (disabled only for the H2 console)
+- **CSRF enabled** for browser forms (disabled only for the H2 console). Thymeleaf's `th:action` integration with Spring Security auto-injects the `_csrf` hidden input on every form.
 - **Headers**: `frame-options` disabled so the H2 console iframe renders
+- **No credential hints in the UI** — the login page intentionally does not display the demo credentials (they live in this README only).
 
 ### Credentials
 
-The admin user is provisioned in-memory at startup with a **BCrypt-hashed password**:
+The admin user is provisioned in memory at application startup with a **BCrypt-hashed password** via Spring Security's `InMemoryUserDetailsManager`:
 
 | Field | Value |
 |-------|-------|
@@ -560,7 +579,7 @@ The admin user is provisioned in-memory at startup with a **BCrypt-hashed passwo
 | Password | `admin` |
 | Role | `ADMIN` |
 
-> Demo credentials only. Replace with a persistent `app_user`-backed `UserDetailsService` before any non-demo deployment.
+> Demo credentials only — they exist to make the demonstrator reproducible on a fresh Codespace without any setup. For a real deployment, replace `InMemoryUserDetailsManager` with a database-backed `UserDetailsService` (adding a `users` table and repository), and rotate the password.
 
 ### Summary table
 
@@ -586,7 +605,7 @@ The admin user is provisioned in-memory at startup with a **BCrypt-hashed passwo
 
 ```bash
 # 1. Clone the repository
-git clone <repository-url>
+git clone https://github.com/PlatonUser/qtd-internet-technology.git
 cd qtd-internet-technology/backend
 
 # 2. Start the application (Linux/macOS)
@@ -618,12 +637,21 @@ The application starts on **`http://localhost:8080`**. Schema is created on star
 ### Calling the REST API
 
 ```bash
-# Public web is open — but /api is admin-only:
+# /api is admin-only — Basic Auth required:
 curl -u admin:admin http://localhost:8080/api/categories
-curl -u admin:admin http://localhost:8080/api/questions?categoryId=1&activeOnly=true
+curl -u admin:admin "http://localhost:8080/api/questions?categoryId=1&activeOnly=true"
 curl -u admin:admin -X POST http://localhost:8080/api/sessions \
      -H "Content-Type: application/json" \
      -d '{"categoryId":1,"players":["Alice","Bob"]}'
+```
+
+Or open `/swagger-ui.html`, click **Authorize**, enter `admin` / `admin`, and try the endpoints from the browser.
+
+### Running the tests
+
+```bash
+cd backend
+./mvnw test
 ```
 
 ## 7.2 Running on GitHub Codespaces
@@ -637,14 +665,14 @@ The repository contains a `.devcontainer/devcontainer.json` pre-configured with 
    cd backend
    ./mvnw spring-boot:run
    ```
-4. When port **`8080`** is forwarded, open the **Ports** tab → right-click port `8080` → **Port visibility → Public** (required so the URL is reachable from outside Codespaces).
-5. Click **Open in Browser** on port `8080`. The full app — home, session flow, admin login, Swagger UI — is available at:
+4. Once Spring Boot has started, port **`8080`** is auto-forwarded by Codespaces. Open the **Ports** tab and click the globe icon on port `8080` — Codespaces will open the app at a URL like:
    ```
    https://<codespace-name>-8080.app.github.dev/
    https://<codespace-name>-8080.app.github.dev/swagger-ui.html
    ```
+5. Log in at `/admin/login` with `admin` / `admin`. Swagger UI's **Authorize** button accepts the same credentials.
 
-`server.forward-headers-strategy=framework` is already set so that Spring honours the Codespaces reverse-proxy headers and form-login redirects work correctly under the public Codespace URL.
+`server.forward-headers-strategy=framework` is already set so that Spring honours the Codespaces reverse-proxy headers and form-login redirects work correctly under the Codespace URL.
 
 ---
 
@@ -658,18 +686,18 @@ The repository contains a `.devcontainer/devcontainer.json` pre-configured with 
 | REST API / Documentation / Integration | Platon Pashkevych |
 | Frontend / UX / Design System | Snizhana Pashkevych |
 
-The team coordinated through weekly syncs and used the GitHub repository as the single source of truth — all source code, the seed dataset, the dev-container configuration and the documentation (this README) live there. Commits and pull-requests provide a full timeline of the work.
+The team coordinated through weekly syncs and used the GitHub repository as the single source of truth — all source code, the seed dataset, the dev-container configuration, the unit tests and the documentation (this README) live there. Commits and pull-requests provide a full timeline of the work.
 
 ## 8.1 Milestones
 
 | # | Milestone (assessment §2.5) | Outcome | Status |
 |---|-----------------------------|---------|--------|
 | 1 | **Analysis** — Scenario, use case, user stories | §1 of this README — domain & actors defined, 10 user stories | ✅ |
-| 2 | **Domain Design** — Domain model | §2 — 5 JPA entities + 2 collection tables, ERD diagram | ✅ |
+| 2 | **Domain Design** — Domain model | §2 — 4 JPA entities + 2 collection tables, ERD diagram | ✅ |
 | 3 | **Frontend implementation** — Design, prototyping, realisation | §3 — 11 Thymeleaf views, shared layout fragments, full CSS design system | ✅ |
-| 4 | **Business Logic & API design** — Rules + REST API | §4 — 2 enforced rules; full REST surface documented with OpenAPI annotations | ✅ |
-| 5 | **Data & API implementation** — JPA, services, controllers | §5 — 4 repositories, 4 services, 9 controllers (3 REST + 6 web) | ✅ |
-| 6 | **Security** — API-level authentication | §6 — HTTP Basic on `/api/**` + form login on `/admin/**`, BCrypt hashing | ✅ |
+| 4 | **Business Logic & API design** — Rules + REST API | §4 — 2 enforced rules; full REST surface documented with OpenAPI annotations (`@Tag`, `@Operation`, `@SecurityRequirement`) | ✅ |
+| 5 | **Data & API implementation** — JPA, services, controllers | §5 — 4 repositories, 4 services, 9 controllers (3 REST + 6 web), plus unit tests for the service layer | ✅ |
+| 6 | **Security** — API-level authentication | §6 — HTTP Basic on `/api/**` + form login on `/admin/**`, BCrypt hashing, login UI free of credential hints | ✅ |
 | 7 | **Demonstrator** — End-to-end integration | §7 — single Spring Boot artefact, runs locally and on Codespaces, seed data pre-loaded | ✅ |
 
 ## 8.2 Requirements Coverage
@@ -678,14 +706,14 @@ The team coordinated through weekly syncs and used the GitHub repository as the 
 |---------------------------------------------|---------------|
 | ≥ 3 layers across ≥ 2 tiers | Browser (tier 1) ⇄ Spring Boot (tier 2) with Presentation / Service / Repository layers |
 | ≥ 4 views for the user stories | 11 views (4 public + 7 admin) |
-| ≥ 4 entities in the schema | 5 entities (`AppUser`, `Category`, `Question`, `Session`, `SessionAnswer`) + 2 collection tables |
-| ≥ 1 business rule in the service layer | 2 rules (minimum active questions; fixed random 5-question pick) |
+| ≥ 4 entities in the schema | 4 entities (`Category`, `Question`, `Session`, `SessionAnswer`) + 2 collection tables (`session_players`, `session_question_ids`) |
+| ≥ 1 business rule in the service layer | 2 rules (minimum active questions; fixed random 5-question pick) — both covered by unit tests |
 | Responsive, consistent visual design | Shared CSS design system, fluid grid, sticky nav, mobile-first breakpoints |
 | OOP, design patterns, DRY, CRUD | Layered architecture, Repository, Builder, MVC, PRG, fragment reuse, full CRUD per entity |
 | Enterprise-grade backend (≥ Spring Boot 3.0 / Java 17) | Spring Boot 3.2.0, Java 17 |
 | Relational database | H2 in-memory (justified for reproducibility of the demonstrator) |
 | GitHub version control | Repository linked above; full commit history |
-| OpenAPI 3.0 documentation | SpringDoc OpenAPI 2.3.0 at `/swagger-ui.html` and `/api-docs` |
+| OpenAPI 3.0 documentation | SpringDoc OpenAPI 2.3.0 at `/swagger-ui.html` and `/api-docs`, with Basic Auth security scheme declared in `OpenApiConfig` |
 | README on GitHub | This file — covers analysis, design, implementation, installation, links, group, video, OpenAPI, milestones |
 | Presentation video | Linked in the *Links* section above |
 | GitHub Codespaces deployment | `.devcontainer/devcontainer.json` ready; instructions in §7.2 |
