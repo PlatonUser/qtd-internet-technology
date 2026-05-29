@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/categories")
-@CrossOrigin(origins = "*")
 @Tag(name = "Categories", description = "Manage question categories")
 @SecurityRequirement(name = "basicAuth")
 public class CategoryController {

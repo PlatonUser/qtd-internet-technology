@@ -13,7 +13,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/questions")
-@CrossOrigin(origins = "*")
 @Tag(name = "Questions", description = "Manage discussion questions")
 @SecurityRequirement(name = "basicAuth")
 public class QuestionController {

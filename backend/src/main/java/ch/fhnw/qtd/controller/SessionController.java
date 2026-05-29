@@ -16,7 +16,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/sessions")
-@CrossOrigin(origins = "*")
 @Tag(name = "Sessions", description = "Manage game sessions and player answers")
 @SecurityRequirement(name = "basicAuth")
 public class SessionController {
