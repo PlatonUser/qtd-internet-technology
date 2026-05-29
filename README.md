@@ -20,9 +20,8 @@
 | Resource | URL |
 |----------|-----|
 | 🎥 **Video Presentation** | *(add YouTube / SWITCHtube / Microsoft Stream link before submission)* |
-| 🌐 **Deployed Web Application** | *(add public GitHub Codespaces URL once port `8080` is made public)* |
 | 📄 **OpenAPI / Swagger Documentation** | `https://<codespace-url>/swagger-ui.html` (or `http://localhost:8080/swagger-ui.html` locally) |
-| 💻 **GitHub Repository** | *(add repository URL)* |
+| 💻 **GitHub Repository** | https://github.com/PlatonUser/qtd-internet-technology.git |
 
 ---
 
