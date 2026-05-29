@@ -371,7 +371,7 @@ All REST endpoints are documented via **OpenAPI 3.0 / Swagger UI**. The OpenAPI 
 | `GET` | `/api/sessions/{id}/questions?limit=5` | Get the questions selected for a session |
 | `POST` | `/api/sessions/{id}/answers` | Add an answer — body `{ "questionId", "playerName", "answerText" }` |
 | `GET` | `/api/sessions/{id}/answers` | List all answers for a session |
-| GET | /api/sessions/{id}/answer-count | 
+| `GET` | `/api/sessions/{id}/answer-count` | Count of answers in a session |
 
 ### Response codes
 
