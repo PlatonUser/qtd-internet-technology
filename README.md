@@ -19,7 +19,7 @@
 
 | Resource | URL |
 |----------|-----|
-| 🎥 **Video Presentation** | *(add YouTube / SWITCHtube / Microsoft Stream link before submission)* |
+| 🎥 **Video Presentation** | https://tube.switch.ch/videos/nZz4nPjfWA |
 | 📄 **OpenAPI / Swagger Documentation** | `/swagger-ui.html` — available at `http://localhost:8080/swagger-ui.html` when running locally, or at the forwarded Codespaces URL after starting the app (see [§7.2](#72-running-on-github-codespaces)) |
 | 💻 **GitHub Repository** | https://github.com/PlatonUser/qtd-internet-technology.git |
 
@@ -97,7 +97,7 @@ The system is built as a responsive web application that works seamlessly on bot
 ### Administrator
 - **Log In** — Authenticate via a form login at `/admin/login` (Spring Security).
 - **Dashboard** — See counts of categories, questions, sessions and answers, plus a per-category breakdown.
-- **Manage Categories (CRUD)** — Create, list, edit, deactivate or delete categories. Deletion cascades to the category's questions (`orphanRemoval = true`).
+- **Manage Categories (CRUD)** — Create, list, edit, deactivate or delete categories. Deletion is blocked when the category still has active questions; once those are removed or deactivated, the deletion cascades to the remaining questions (orphanRemoval = true).
 - **Manage Questions (CRUD)** — Create, list, edit (text, category, active flag) or delete questions; validation enforces minimum length of 10 characters.
 - **Review Sessions** — List all past sessions ordered newest first with date, category, question count and answer count.
 
